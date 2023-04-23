@@ -4,6 +4,7 @@ import Index from "./views/index";
 import Register from "./views/register";
 import Login from "./views/login";
 import Home from "./views/home";
+import DashboardContentUser from "./views/userHome";
 function App() {
   return (
     <>
@@ -13,6 +14,7 @@ function App() {
           <Route exact path="/register" element={<Register/>} />
           <Route exact path="/login" element={<Login/>} />
           <Route exact path="/home" element={<Home/>} />
+          <Route exact path="/userhome" element={<DashboardContentUser/>} />
         </Routes>
       </Router>
     </>

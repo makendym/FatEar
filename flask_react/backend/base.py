@@ -47,34 +47,60 @@ def register():
     return render_template('register.html')
 
 
+# # Authenticates the login
+# @api.route('/loginAuth', methods=['GET', 'POST'])
+# def loginAuth():
+#     # grabs information from the forms
+#     username = request.form('username')
+#     password = request.form('password')
+
+#     # cursor used to send queries
+#     cursor = conn.cursor()
+#     # executes query
+#     query = 'SELECT * FROM user WHERE username = %s and password = %s'
+#     cursor.execute(query, (username, password))
+#     # stores the results in a variable
+#     data = cursor.fetchone()
+#     # use fetchall() if you are expecting more than 1 data row
+#     cursor.close()
+#     error = None
+#     if (data):
+#         # creates a session for the the user
+#         # session is a built in
+#         session['username'] = username
+#         return jsonify({"success": "User registered successfully"})
+#     else:
+#         # returns an error message to the html page
+#         error = 'Invalid login or username'
+#         return jsonify({"error": error})
+
+# Authenticates the register
+
+
 # Authenticates the login
 @api.route('/loginAuth', methods=['GET', 'POST'])
 def loginAuth():
-    # grabs information from the forms
-    username = request.form.get('username',"admin")
-    password = request.form.get('password',"test123")
+    # Grab information from the form
+    username = request.form.get('username')
+    password = request.form.get('password')
 
-    # cursor used to send queries
+    # Check if the username and password are valid
     cursor = conn.cursor()
-    # executes query
-    query = 'SELECT * FROM user WHERE username = %s and password = %s'
+    query = 'SELECT * FROM user WHERE username = %s AND password = %s'
     cursor.execute(query, (username, password))
-    # stores the results in a variable
     data = cursor.fetchone()
-    # use fetchall() if you are expecting more than 1 data row
     cursor.close()
-    error = None
-    if (data):
-        # creates a session for the the user
-        # session is a built in
+
+    # If the username and password are valid, store the username in the session
+    if data:
         session['username'] = username
-        return jsonify({"success": "User registered successfully"})
+        return jsonify({"success": "User logged in successfully."})
+
+    # If the username and password are not valid, return an error message
     else:
-        # returns an error message to the html page
-        error = 'Invalid login or username'
+        error = 'Invalid login or username.'
         return jsonify({"error": error})
 
-# Authenticates the register
 
 
 @api.route('/registerAuth', methods=['POST'])
@@ -113,3 +139,8 @@ def home():
     data = cursor.fetchall()
     cursor.close()
     return jsonify(username=user, posts=data)
+
+@api.route('/logout')
+def logout():
+    session.pop('username')
+    return redirect('/')

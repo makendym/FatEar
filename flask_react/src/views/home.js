@@ -1,10 +1,14 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Button from "@mui/material/Button";
+
 function Home() {
   const [posts, setPosts] = useState([]);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -24,6 +28,14 @@ function Home() {
     return <p>Loading...</p>;
   }
 
+  const handleLogout = async () => {
+    try {
+      await axios.get("/logout");
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+    }
+  };
   return (
     <>
       <form action="/home" method="POST">
@@ -53,6 +65,9 @@ function Home() {
       <a href="/upload_form">Upload a photo</a>
       <br />
       <a href="/logout">Logout</a>
+      <Button onClick={handleLogout} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+        Logout
+      </Button>
     </>
   );
 }
