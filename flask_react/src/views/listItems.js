@@ -53,27 +53,12 @@ const MainListItems = () => {
 
   return (
     <React.Fragment>
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-start" }}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="menu-appbar"
-          aria-haspopup="true"
-          color="inherit"
-        >
+      <ListItemButton>
+        <ListItemIcon>
           <AccountCircle />
-        </IconButton>
-        <Typography
-          component="h5"
-          variant="h6"
-          color="inherit"
-          noWrap
-          sx={{ flexGrow: 1 }}
-          style={{ margin: "10px" }}
-        >
-          {username}
-        </Typography>
-      </Stack>
+        </ListItemIcon>
+        <ListItemText primary={username} />
+      </ListItemButton>
       <Divider sx={{ my: 1 }} />
       <ListItemButton onClick={goToHome}>
         <ListItemIcon>
