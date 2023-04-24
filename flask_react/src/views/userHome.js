@@ -183,6 +183,7 @@ function DashboardContentUser() {
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
+                  
                 }}
               >
                 <Stack
@@ -196,7 +197,7 @@ function DashboardContentUser() {
                     color="inherit"
                     noWrap
                     sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
+                    style={{marginTop:"10px"}}
                   >
                     {username}
                   </Typography>
@@ -230,7 +231,7 @@ function DashboardContentUser() {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="contained" onClick={handleLogout}>
+              <Button variant="filledTonal" size="medium" style={{fontSize:"13px"}} onClick={handleLogout}>
                 Logout
               </Button>
             </Stack>

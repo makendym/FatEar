@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -15,7 +15,8 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-
+import CircularProgress from "@mui/material/CircularProgress";
+import { green } from "@mui/material/colors";
 function Copyright(props) {
   return (
     <Typography
@@ -36,85 +37,89 @@ function Copyright(props) {
 
 const theme = createTheme();
 
-
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [profileData, setProfileData] = useState(null);
 
   const navigate = useNavigate();
 
+  const [loading, setLoading] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+  const timer = React.useRef();
+
+  const buttonSx = {
+    ...(success && {
+      bgcolor: green[500],
+      "&:hover": {
+        bgcolor: green[700],
+      },
+    }),
+  };
+
+  React.useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
+  const handleButtonClick = () => {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
   const handleSubmit = (event) => {
     console.log("username :" + username + "\nPass: " + password);
     event.preventDefault();
     const formData = new FormData(event.target);
-
-    axios({
-      method: "POST",
-      url: "/loginAuth",
-      data: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-    .then((response) => {
-      const res = response.data;
-      setProfileData({
-          username: res.username,
-          password: res.password,
-        });
-        if (response.status === 200) {
-          setSuccess(res.success);
-          console.log(success);
-          console.log(profileData);
-          navigate("/userhome");
-        } else {
-          setError(res.error);
-          console.log(res.error);
-        }
-      })
-      .catch((error) => {
-        if (error.response) {
-          console.log(error.response);
-          console.log(error.response.status);
-          console.log(error.response.headers);
-        }
-      });
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        axios({
+          method: "POST",
+          url: "/loginAuth",
+          data: formData,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+          .then((response) => {
+            const res = response.data;
+            setProfileData({
+              username: res.username,
+              password: res.password,
+            });
+            if (response.data.hasOwnProperty("success")) {
+              setSuccess(true);
+              setLoading(false);
+              console.log(profileData);
+              navigate("/userhome");
+            } else {
+              setError(res.error);
+              console.log(res.error);
+              setSuccess(false);
+              setLoading(false);
+            }
+          })
+          .catch((error) => {
+            if (error.response) {
+              console.log(error.response);
+              console.log(error.response.status);
+              console.log(error.response.headers);
+            }
+          });
+      }, 2000);
+    }
   };
 
-  
-
   return (
-    // <div>
-    //   <h1>Login</h1>
-    //   {error && <p>{error}</p>}
-    //   <form onSubmit={handleSubmit}>
-    //     <div>
-    //       <label htmlFor="username">Username:</label>
-    //       <input
-    //         type="text"
-    //         id="username"
-    //         value={username}
-    //         onChange={(e) => setUsername(e.target.value)}
-    //         required
-    //       />
-    //     </div>
-    //     <div>
-    //       <label htmlFor="password">Password:</label>
-    //       <input
-    //         type="password"
-    //         id="password"
-    //         value={password}
-    //         onChange={(e) => setPassword(e.target.value)}
-    //         required
-    //       />
-    //     </div>
-    //     <button type="submit">Log In</button>
-    //   </form>
-    // </div>
-
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
@@ -166,14 +171,41 @@ function Login() {
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Sign In
-            </Button>
+
+            <Box sx={{ m: 1, position: "relative" }}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={buttonSx}
+                disabled={loading}
+              >
+                Sign In
+              </Button>
+              {loading && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: green[500],
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    marginTop: "-12px",
+                    marginLeft: "-12px",
+                  }}
+                />
+              )}
+            </Box>
+            {error && (
+              <Typography
+                variant="subtitle1"
+                align="center"
+                color="red"
+                gutterBottom
+              >
+                {error}
+              </Typography>
+            )}
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">

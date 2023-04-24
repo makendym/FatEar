@@ -164,7 +164,7 @@ function DashboardContent() {
                 </Typography>
 
                 <Typography variant="subtitle1" align="center" gutterBottom>
-                  This will be your favorite streaming platform
+                  This will be your favorite streaming platform(specify categories in the search)
                 </Typography>
               </Stack>
               <Stack
