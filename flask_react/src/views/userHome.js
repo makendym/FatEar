@@ -114,6 +114,7 @@ function DashboardContentUser() {
         setPosts(response.data.posts);
         setUsername(response.data.username);
         setLoading(false);
+        console.log(response.data.posts);
       } catch (error) {
         console.error(error);
         setLoading(false);
@@ -183,7 +184,6 @@ function DashboardContentUser() {
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  
                 }}
               >
                 <Stack
@@ -197,7 +197,7 @@ function DashboardContentUser() {
                     color="inherit"
                     noWrap
                     sx={{ flexGrow: 1 }}
-                    style={{marginTop:"10px"}}
+                    style={{ marginTop: "10px" }}
                   >
                     {username}
                   </Typography>
@@ -231,7 +231,12 @@ function DashboardContentUser() {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="filledTonal" size="medium" style={{fontSize:"13px"}} onClick={handleLogout}>
+              <Button
+                variant="filledTonal"
+                size="medium"
+                style={{ fontSize: "13px" }}
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </Stack>
@@ -318,6 +323,20 @@ function DashboardContentUser() {
                 </Button>
               </Stack>
             </Stack>
+          </Container>
+          <Container>
+            <Paper>
+              <ul>
+                {posts.map((d) => (
+                  <li key = "0">
+                    <p>Username: {d.username}</p>
+                    <p>Stars: {d.stars}</p>
+                    <p>Song Name : {d.title}</p>
+                    <p>Rating Date : {d.ratingDate}</p>
+                  </li>
+                ))}
+              </ul>
+            </Paper>
           </Container>
         </Box>
       </Box>
