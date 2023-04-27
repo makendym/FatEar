@@ -176,7 +176,7 @@ def registerAuths():
         return jsonify({"error": error})
     else:
         # Inserts new user data into the database
-        ins = 'INSERT INTO user VALUES(%s,%s,%s,%s)'
+        ins = 'INSERT INTO user (username, pwd, fname, lname, nickname) VALUES (%s, %s, %s, %s, %s)'
         cursor.execute(ins, (username, pwd,fname,lname,nickname))
         conn.commit()
         cursor.close()
@@ -197,3 +197,53 @@ def home():
 def logout():
     session.pop('username')
     return redirect('/')
+
+
+@api.route('/search')
+def search():
+    genre = request.args.get('genre')
+    search = request.args.get('search')
+    cursor = conn.cursor()
+    if genre and search:
+        query = "SELECT song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre \
+                FROM song \
+                JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID \
+                JOIN artist ON artist.artistID = artistPerformsSong.artistID \
+                JOIN songInAlbum ON songInAlbum.songID = song.songID \
+                JOIN album ON album.albumID = songInAlbum.albumID \
+                JOIN songGenre ON songGenre.songID = song.songID \
+                WHERE songGenre.genre = %s AND artist.fname = %s"
+        cursor.execute(query, (genre, search))
+    elif genre:
+        query = "SELECT song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre \
+                FROM song \
+                JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID \
+                JOIN artist ON artist.artistID = artistPerformsSong.artistID \
+                JOIN songInAlbum ON songInAlbum.songID = song.songID \
+                JOIN album ON album.albumID = songInAlbum.albumID \
+                JOIN songGenre ON songGenre.songID = song.songID \
+                WHERE songGenre.genre = %s"
+        cursor.execute(query, (genre,))
+    elif search:
+        query = "SELECT song.title, artist.fname, artist.lname, album.albumTitle\
+                FROM song JOIN artistPerformsSong ON song.songID  = artistPerformsSong.songID \
+                JOIN artist ON artist.artistID = artistPerformsSong.artistID \
+                JOIN songInAlbum ON songInAlbum.songID = song.songID\
+                JOIN album ON album.albumID = songInAlbum.albumID\
+                WHERE artist.fname = %s"
+        cursor.execute(query, (search,))
+    else:
+        query = "SELECT * FROM song"
+        cursor.execute(query)
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify(data)
+
+@api.route('/genre')
+def genre():
+    cursor = conn.cursor()
+    query = 'SELECT DISTINCT genre FROM songGenre'
+    cursor.execute(query)
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify(genre=data)
