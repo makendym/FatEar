@@ -96,7 +96,7 @@ const Drawer = styled(MuiDrawer, {
 
 const mdTheme = createTheme();
 
-const UserProfile = () => {
+const Playlist = () => {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -105,6 +105,9 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+  const goToProfile = () => {
+    navigate(`/userprofile`);
+  };
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -151,27 +154,47 @@ const UserProfile = () => {
     boxShadow: 24,
     p: 4,
   };
-
-  const [userInfo, setUserInfo] = useState([]);
-  const [fanOf, setFanOf] = useState([]);
-  const goToProfile = () => {
-    navigate(`/`);
+  const [open2, setOpen2] = React.useState(false);
+  const handleOpen = () => setOpen2(true);
+  const handleClose2 = () => setOpen2(false);
+  const [playlistTitle, setPlaylistTitle] = useState("");
+  const [userPlaylist, setUserPlaylist] = useState([]);
+  const handlePlaylistTittleChange = (event) => {
+    setPlaylistTitle(event.target.value);
   };
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchPlaylist = async () => {
       try {
-        const response = await axios.get("/userprofile");
-        setUserInfo(response.data.user_data);
-        setFanOf(response.data.artist_data);
+        const response = await axios.get("/list-user-playlist");
+        setUserPlaylist(response.data[1]);
         console.log(response.data[1]);
-        console.log(response.data[2]);
       } catch (error) {
         console.error(error);
       }
     };
-    fetchUserProfile();
+    fetchPlaylist();
   }, []);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    axios
+      .post("/create-playlist", {
+        playlisttitle: playlistTitle,
+      })
+      .then((response) => {
+        const res = response.data;
+        console.log(res);
+        console.log(playlistTitle);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -315,37 +338,62 @@ const UserProfile = () => {
                 spacing={1}
                 style={{ textAlign: "center", paddingBottom: "50px" }}
               >
-                <Typography variant="h3" gutterBottom>
-                  Profile
+                <Typography variant="h2" gutterBottom>
+                  FatEAR™ 🎧 Playlist
                 </Typography>
-                <Paper style={{ width: "400px" }}>
-                  {userInfo?.map((user, index) => (
-                    <div key={index}>
-                      <p>
-                        <strong>Username:</strong> {user.username}
-                      </p>
-                      <p>
-                        <strong>First Name:</strong> {user.fname}
-                      </p>
-                      <p>
-                        <strong>Last Name:</strong> {user.lname}
-                      </p>
-                      <p>
-                        <strong>Nick Name:</strong> {user.nickname}
-                      </p>
-                    </div>
-                  ))}
-                  <p>
-                    <strong>Fan Of:</strong>
-                  </p>
-                  {fanOf?.map((user, index) => (
-                    <div key={index}>
-                      <p>
-                        {user.fname} {user.lname}
-                      </p>
-                    </div>
-                  ))}
-                </Paper>
+
+                <Button onClick={handleOpen}>
+                  <AddCircleIcon style={{ marginRight: "10px" }} />
+                  New Playlist
+                </Button>
+                <Modal
+                  aria-labelledby="transition-modal-title"
+                  aria-describedby="transition-modal-description"
+                  open={open2}
+                  onClose={handleClose2}
+                  closeAfterTransition
+                  slots={{ backdrop: Backdrop }}
+                  slotProps={{
+                    backdrop: {
+                      timeout: 500,
+                    },
+                  }}
+                >
+                  <Fade in={open2}>
+                    <Box
+                      component="form"
+                      noValidate
+                      onSubmit={handleSubmit}
+                      sx={style}
+                    >
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        style={{ textAlign: "center", paddingBottom: "50px" }}
+                      >
+                        <TextField
+                          id="outlined-basic"
+                          label="Enter Playlist Name"
+                          variant="outlined"
+                          style={{ width: "20vw" }}
+                          value={playlistTitle}
+                          onChange={handlePlaylistTittleChange}
+                        />
+                        <Button variant="contained" type="submit">
+                          Add
+                        </Button>
+                      </Stack>
+                    </Box>
+                  </Fade>
+                </Modal>
+                {userPlaylist.map((userPlaylist, index) => (
+                  <Paper key={index}>
+                    <p>
+                      <strong>Playlist Title:</strong>{" "}
+                      {userPlaylist.playlistTitle}
+                    </p>
+                  </Paper>
+                ))}
               </Stack>
             </Stack>
           </Container>
@@ -355,4 +403,4 @@ const UserProfile = () => {
     </ThemeProvider>
   );
 };
-export default UserProfile;
+export default Playlist;

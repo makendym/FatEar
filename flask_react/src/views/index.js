@@ -1,17 +1,4 @@
-// import * as React from "react";
-
-// function Index() {
-//   return (
-//     <>
-//       <a href="/login">Login</a>
-//       <br />
-//       <a href="/register">Register</a>
-//     </>
-//   );
-// }
-
-// export default Index;
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
@@ -27,7 +14,11 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -72,6 +63,12 @@ const mdTheme = createTheme();
 
 function DashboardContent() {
   const [open, setOpen] = React.useState(true);
+  const [loading, setLoading] = useState(true);
+  const [genreList, setGenreList] = useState([]);
+  const [genre, setGenre] = useState("");
+  const [rating, setRating] = useState("");
+  const [search, setSearch] = useState("");
+  const [result, setResult] = useState([]);
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -85,6 +82,57 @@ function DashboardContent() {
   const register = () => {
     navigate(`/register`);
   };
+
+  useEffect(() => {
+    const fetchGenreList = async () => {
+      try {
+        const response = await axios.get("/genre");
+        setGenreList(response.data.genre);
+        setLoading(false);
+        console.log(response.data.genre);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+    fetchGenreList();
+  }, []);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+
+    axios
+      .get("/search", {
+        params: {
+          genre: genre,
+          search: search,
+        },
+      })
+      .then((response) => {
+        const res = response.data;
+        setResult(response.data);
+        console.log(res);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
+  const handleGenreChange = (event) => {
+    setGenre(event.target.value);
+  };
+  const handleRatingChange = (event) => {
+    setRating(event.target.value);
+  };
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+  };
+
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
@@ -164,34 +212,107 @@ function DashboardContent() {
                 </Typography>
 
                 <Typography variant="subtitle1" align="center" gutterBottom>
-                  This will be your favorite streaming platform(specify categories in the search)
+                  This will be your favorite streaming platform(specify
+                  categories in the search)
                 </Typography>
               </Stack>
-              <Stack
-                direction="row"
-                spacing={2}
-                style={{ textAlign: "center", paddingTop: "40px" }}
+              <Box
+                component="form"
+                noValidate
+                onSubmit={handleSubmit}
+                sx={{ mt: 3 }}
               >
-                <TextField
-                  id="outlined-basic"
-                  variant="outlined"
-                  color="primary"
-                  placeholder="Find artist, songs and more..."
-                  style={{ width: "30vw" }}
-                />
-                <Button
-                  variant="outlined"
-                  sx={{ width: 100 }}
-                  style={{
-                    textTransform: "none",
-                    height: 56,
-                  }}
-                  color="primary"
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  style={{ textAlign: "center", paddingTop: "40px" }}
                 >
-                  Search
-                </Button>
-              </Stack>
+                  <Box sx={{ minWidth: 120 }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="company-select-label">Genre</InputLabel>
+                      <Select
+                        labelId="genre-select-label"
+                        id="genre"
+                        value={genre}
+                        label="Genre"
+                        onChange={handleGenreChange}
+                      >
+                        <MenuItem value="">None</MenuItem>
+                        {genreList.map((genre, index) => (
+                          <MenuItem key={index} value={genre.genre}>
+                            {genre.genre}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ minWidth: 120 }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="company-select-label">Rating</InputLabel>
+                      <Select
+                        labelId="rating-select-label"
+                        id="rating"
+                        value={rating}
+                        label="Rating"
+                        onChange={handleRatingChange}
+                      >
+                        <MenuItem value="">None</MenuItem>
+                        <MenuItem value={1}>1</MenuItem>
+                        <MenuItem value={2}>2</MenuItem>
+                        <MenuItem value={3}>3</MenuItem>
+                        <MenuItem value={4}>4</MenuItem>
+                        <MenuItem value={5}>5</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  <TextField
+                    id="outlined-basic"
+                    variant="outlined"
+                    color="primary"
+                    placeholder="Find artist, songs and more..."
+                    style={{ width: "30vw" }}
+                    value={search}
+                    onChange={handleSearchChange}
+                  />
+
+                  <Button
+                    type="submit"
+                    variant="outlined"
+                    sx={{ width: 100 }}
+                    style={{
+                      textTransform: "none",
+                      height: 56,
+                    }}
+                    color="primary"
+
+                    //onClick={() => setSubmitSearch(search)}
+                  >
+                    Search
+                  </Button>
+                </Stack>
+              </Box>
             </Stack>
+          </Container>
+          <Container>
+            {result.map((result, index) => (
+              <Paper key={index} value={result}>
+                <p>
+                  <strong>Artist:</strong> {result.fname} {result.lname}
+                </p>
+                <p>
+                  <strong>Title:</strong> {result.title}
+                </p>
+                <p>
+                  <strong>Album:</strong> {result.albumTitle}
+                </p>
+                {result.genre && (
+                  <p>
+                    <strong>Genre:</strong> {result.genre}
+                  </p>
+                )}
+              </Paper>
+            ))}
           </Container>
         </Box>
       </Box>

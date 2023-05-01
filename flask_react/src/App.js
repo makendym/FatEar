@@ -9,6 +9,8 @@ import Posts from "./views/posts";
 import Follows from "./views/follows"
 import Friends from "./views/friends"
 import FriendRequest from "./views/friendsRequest"
+import Playlist from "./views/playlist"
+import UserProfile from "./views/userProfile"
 function App() {
   return (
     <>
@@ -23,6 +25,8 @@ function App() {
           <Route exact path="/friends" element={<Friends/>} />
           <Route exact path="/friend-request" element={<FriendRequest/>} />
           <Route exact path="/userhome" element={<DashboardContentUser/>} />
+          <Route exact path="/playlist" element={<Playlist/>} />
+          <Route exact path="/userprofile" element={<UserProfile/>} />
         </Routes>
       </Router>
     </>

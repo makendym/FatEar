@@ -110,6 +110,10 @@ function DashboardContentUser() {
   const [submitSearch, setSubmitSearch] = useState("");
   const [result, setResult] = useState([]);
   const navigate = useNavigate();
+  const goToProfile = () => {
+    navigate(`/userprofile`);
+  };
+
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -278,8 +282,7 @@ function DashboardContentUser() {
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
-                    <MenuItem onClick={handleClose}>Profile</MenuItem>
-                    <MenuItem onClick={handleClose}>My account</MenuItem>
+                    <MenuItem onClick={goToProfile}>Profile</MenuItem>
                   </Menu>
                 </Stack>
               </Container>

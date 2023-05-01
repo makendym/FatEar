@@ -10,6 +10,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ForumIcon from "@mui/icons-material/Forum";
 import IconButton from "@mui/material/IconButton";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
@@ -36,6 +37,9 @@ const MainListItems = () => {
 
   const goToFriendRequest = () => {
     navigate(`/friend-request`);
+  };
+  const goToPlaylist = () => {
+    navigate(`/playlist`);
   };
   const [username, setUsername] = useState("");
 
@@ -71,6 +75,12 @@ const MainListItems = () => {
           <ForumIcon />
         </ListItemIcon>
         <ListItemText primary="Posts" />
+      </ListItemButton>
+      <ListItemButton onClick={goToPlaylist}>
+        <ListItemIcon>
+          <MusicNoteIcon />
+        </ListItemIcon>
+        <ListItemText primary="Playlist" />
       </ListItemButton>
       <ListItemButton onClick={goToFollows}>
         <ListItemIcon>
