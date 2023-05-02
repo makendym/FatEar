@@ -299,13 +299,12 @@ const Follows = () => {
         >
           <Toolbar />
           <Container
-            maxWidth="sm"
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "50vh",
-            }}
+             maxWidth="sm"
+             sx={{
+               display: "flex",
+               justifyContent: "center",
+               marginTop: "60px",
+             }}
           >
             <Stack direction="column" spacing={2}>
               <Stack

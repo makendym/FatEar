@@ -9,7 +9,6 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Link from "@mui/material/Link";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -26,6 +25,13 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Menu from "@mui/material/Menu";
+import CommentIcon from "@mui/icons-material/Comment";
+import Rating from "@mui/material/Rating";
+import AddIcon from "@mui/icons-material/Add";
+
+import Backdrop from "@mui/material/Backdrop";
+import Modal from "@mui/material/Modal";
+import Fade from "@mui/material/Fade";
 
 import { useNavigate } from "react-router-dom";
 // import Chart from './Chart';
@@ -100,14 +106,12 @@ const mdTheme = createTheme();
 
 function DashboardContentUser() {
   const [open, setOpen] = React.useState(true);
-  const [posts, setPosts] = useState([]);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
   const [genreList, setGenreList] = useState([]);
   const [genre, setGenre] = useState("");
   const [rating, setRating] = useState("");
   const [search, setSearch] = useState("");
-  const [submitSearch, setSubmitSearch] = useState("");
   const [result, setResult] = useState([]);
   const navigate = useNavigate();
   const goToProfile = () => {
@@ -197,7 +201,46 @@ function DashboardContentUser() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+  const [value, setValue] = React.useState(2);
 
+  const [open2, setOpen2] = React.useState(false);
+  const handleOpen = () => setOpen2(true);
+  const handleClose2 = () => setOpen2(false);
+  const [post, setpost] = useState("");
+  const handlePlaylistTittleChange = (event) => {
+    setpost(event.target.value);
+  };
+
+  const [open3, setOpen3] = React.useState(false);
+  const handleOpen3 = () => {
+    fetchPlaylist();
+    setOpen3(true);
+    
+  };
+  const handleClose3 = () => setOpen3(false);
+  const [playlist, setPlaylist] = useState([]);
+
+  const fetchPlaylist = async () => {
+    try {
+      const response = await axios.get("/list-user-playlist");
+      setPlaylist(response.data[1]);
+      console.log(response.data[1]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const style = {
+    position: "absolute",
+    top: "60%",
+    left: "55%",
+    transform: "translate(-50%, -50%)",
+    width: 500,
+    height: 150,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
@@ -432,24 +475,177 @@ function DashboardContentUser() {
             </Stack>
           </Container>
           <Container>
-            {result.map((result, index) => (
-              <Paper key={index} value={result}>
-                <p>
-                  <strong>Artist:</strong> {result.fname} {result.lname}
-                </p>
-                <p>
-                  <strong>Title:</strong> {result.title}
-                </p>
-                <p>
-                  <strong>Album:</strong> {result.albumTitle}
-                </p>
-                {result.genre && (
-                  <p>
-                    <strong>Genre:</strong> {result.genre}
-                  </p>
-                )}
-              </Paper>
-            ))}
+            <Paper sx={{ p: 2 }}>
+              {result?.length > 0 ? (
+                <>
+                  {result.map((result, index) => (
+                    <>
+                      <Stack direction="row" spacing={2} key={index}>
+                        <Container
+                          maxWidth="sm"
+                          sx={{
+                            display: "flex",
+                            justifyContent: "left",
+                            alignItems: "center",
+                            height: "20vh",
+                          }}
+                        >
+                          <div>
+                            <p>
+                              <strong>Artist:</strong> {result.fname}{" "}
+                              {result.lname}
+                            </p>
+                            <p>
+                              <strong>Title:</strong> {result.title}
+                            </p>
+                            <p>
+                              <strong>Album:</strong> {result.albumTitle}
+                            </p>
+                            {result.genre && (
+                              <p>
+                                <strong>Genre:</strong> {result.genre}
+                              </p>
+                            )}
+                          </div>
+                        </Container>
+                        <Container
+                          maxWidth="sm"
+                          sx={{
+                            display: "flex",
+                            justifyContent: "right",
+                            alignItems: "center",
+                            height: "20vh",
+                          }}
+                        >
+                          <Stack direction="row" spacing={2}>
+                            <Box
+                              sx={{
+                                "& > legend": { mt: 2 },
+                              }}
+                            >
+                              <Typography component="legend">
+                                Rate Song
+                              </Typography>
+                              <Rating
+                                name="simple-controlled"
+                                value={value}
+                                onChange={(event, newValue) => {
+                                  setValue(newValue);
+                                }}
+                              />
+                            </Box>
+
+                            <Button variant="contained" onClick={handleOpen}>
+                              <CommentIcon style={{ paddingRight: "5px" }} />
+                              Post
+                            </Button>
+                            <Modal
+                              aria-labelledby="transition-modal-title"
+                              aria-describedby="transition-modal-description"
+                              open={open2}
+                              onClose={handleClose2}
+                              closeAfterTransition
+                              slots={{ backdrop: Backdrop }}
+                              slotProps={{
+                                backdrop: {
+                                  timeout: 500,
+                                },
+                              }}
+                            >
+                              <Fade in={open2}>
+                                <Box
+                                  component="form"
+                                  noValidate
+                                  // onSubmit={handleSubmit}
+                                  sx={style}
+                                >
+                                  <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    style={{
+                                      textAlign: "center",
+                                      paddingBottom: "50px",
+                                    }}
+                                  >
+                                    <TextField
+                                      id="outlined-basic"
+                                      label="post a review"
+                                      variant="outlined"
+                                      style={{
+                                        width: "100%",
+                                        marginBottom: "10px",
+                                      }}
+                                      multiline
+                                      rows={2}
+                                      value={post}
+                                      onChange={handlePlaylistTittleChange}
+                                    />
+                                    <Button variant="contained" type="submit">
+                                      Post
+                                    </Button>
+                                  </Stack>
+                                </Box>
+                              </Fade>
+                            </Modal>
+
+                            <Button variant="contained" onClick={handleOpen3}>
+                              <AddIcon style={{ paddingRight: "5px" }} />
+                              add
+                            </Button>
+                            <Modal
+                              aria-labelledby="transition-modal-title"
+                              aria-describedby="transition-modal-description"
+                              open={open3}
+                              onClose={handleClose3}
+                              closeAfterTransition
+                              slots={{ backdrop: Backdrop }}
+                              slotProps={{
+                                backdrop: {
+                                  timeout: 500,
+                                },
+                              }}
+                            >
+                              <Fade in={open3}>
+                                <Box
+                                  component="form"
+                                  noValidate
+                                  // onSubmit={handleSubmit}
+                                  sx={style}
+                                >
+                                  <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    style={{
+                                      textAlign: "center",
+                                      paddingBottom: "50px",
+                                    }}
+                                  >
+                                    {playlist.map((userPlaylist, index) => (
+                                      <Paper key={index}>
+                                        <p>
+                                          <strong>Playlist Title:</strong>{" "}
+                                          {userPlaylist.playlistTitle}
+                                        </p>
+                                      </Paper>
+                                    ))}
+                                   
+                                  </Stack>
+                                </Box>
+                              </Fade>
+                            </Modal>
+                          </Stack>
+                        </Container>
+                      </Stack>
+                      <Divider sx={{ my: 1 }} />
+                    </>
+                  ))}
+                </>
+              ) : (
+                <Typography variant="h6" gutterBottom>
+                  No Songs
+                </Typography>
+              )}
+            </Paper>
           </Container>
         </Box>
       </Box>

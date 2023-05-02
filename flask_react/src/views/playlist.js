@@ -328,8 +328,7 @@ const Playlist = () => {
             sx={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "center",
-              height: "70vh",
+              marginTop: "60px",
             }}
           >
             <Stack direction="column" spacing={2}>

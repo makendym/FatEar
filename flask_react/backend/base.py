@@ -197,7 +197,7 @@ def search():
     search = request.args.get('search')
     cursor = conn.cursor()
     if genre and search:
-        query = "SELECT song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre \
+        query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre \
                 FROM song \
                 JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID \
                 JOIN artist ON artist.artistID = artistPerformsSong.artistID \
@@ -207,7 +207,7 @@ def search():
                 WHERE songGenre.genre = %s AND artist.fname = %s"
         cursor.execute(query, (genre, search))
     elif genre:
-        query = "SELECT song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre \
+        query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre \
                 FROM song \
                 JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID \
                 JOIN artist ON artist.artistID = artistPerformsSong.artistID \
@@ -217,7 +217,7 @@ def search():
                 WHERE songGenre.genre = %s"
         cursor.execute(query, (genre,))
     elif search:
-        query = "SELECT song.title, artist.fname, artist.lname, album.albumTitle\
+        query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle\
                 FROM song JOIN artistPerformsSong ON song.songID  = artistPerformsSong.songID \
                 JOIN artist ON artist.artistID = artistPerformsSong.artistID \
                 JOIN songInAlbum ON songInAlbum.songID = song.songID\
@@ -337,5 +337,62 @@ def pending():
     cursor.close()
     return jsonify({"success":True},data)
 
+@api.route('/accept', methods=['POST'])
+def accept():
+    user = session['username']
+    user2 = request.json.get('user2')
+    cursor = conn.cursor()
+    query = "UPDATE friend SET acceptStatus='Accepted', updatedAt=%s WHERE user1=%s AND user2=%s"
+    cursor.execute(query, (date.today(), user2, user))
+    conn.commit()
+    cursor.close()
+    return jsonify({"success": True},)
+
 
     
+@api.route('/reject', methods=['POST'])
+def reject():
+    user = session['username']
+    user2 = request.json.get('user2')
+    cursor = conn.cursor()
+    query = "UPDATE friend SET acceptStatus='Not accepted', updatedAt=%s WHERE user1=%s AND user2=%s"
+    cursor.execute(query, (date.today(), user2, user))
+    conn.commit()
+    cursor.close()
+    return jsonify({"success": True})
+
+
+@api.route('/post-review', methods=['POST'])
+def postReview():
+    user = session['username']
+    songId = request.json.get('songId')
+    review = request.json.get('review')
+    cursor = conn.cursor()
+    query = "INSERT INTO reviewSong VALUES (%s, %s, %s, %s)"
+    cursor.execute(query, (user, songId, review,date.today()))
+    conn.commit()
+    cursor.close()
+    return jsonify({"success": True})
+
+@api.route('/post-rating', methods=['POST'])
+def postRating():
+    user = session['username']
+    songId = request.json.get('songId')
+    stars = request.json.get('stars')
+    query ="INSERT INTO rateSong VALUES (%s, %s, %s, %s)"
+    cursor.execute(query, (user, songId, stars,date.today()))
+    conn.commit()
+    cursor.close()
+    return jsonify({"success": True})
+
+
+@api.route('/addtoplay', methods=['POST'])
+def addToPlaylist():
+    user = session['username']
+    playlistTitle = request.json.get('playlistTitle')
+    songId = request.json.get('songId')
+    query = "INSERT INTO songInPlaylist VALUES (%s, %s, %s)"
+    cursor.execute(query, (user, playlistTitle, songId))
+    conn.commit()
+    cursor.close()
+    return jsonify({"success": True})

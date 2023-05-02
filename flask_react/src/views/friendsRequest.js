@@ -154,21 +154,67 @@ const Follows = () => {
 
   const [userInfo, setUserInfo] = useState([]);
 
+  const acceptPendingReq = (event, user2) => {
+    event.preventDefault();
+
+    axios
+      .post("/accept", {
+        user2: user2,
+      })
+      .then((response) => {
+        const res = response.data;
+        console.log(res);
+        console.log(user2);
+        fetchPendingStatus();
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
+  const rejectPendingReq = (event, user2) => {
+    event.preventDefault();
+
+    axios
+      .post("/reject", {
+        user2: user2,
+      })
+      .then((response) => {
+        const res = response.data;
+        console.log(res);
+        console.log(user2);
+        fetchPendingStatus();
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
   const goToProfile = () => {
     navigate(`/`);
   };
 
-  useEffect(() => {
-    const fetchPlaylist = async () => {
-      try {
-        const response = await axios.get("/pending");
-        setUserInfo(response.data[1]);
+
+
+  const fetchPendingStatus = async () => {
+    try{
+      const response = await axios.get("/pending");
+      setUserInfo(response.data[1]);
         console.log(response.data[1]);
-      } catch (error) {
-        console.error(error);
+    }catch(error){
+        console.log(error);
       }
-    };
-    fetchPlaylist();
+  };
+  useEffect(() => {
+    fetchPendingStatus();
   }, []);
 
   return (
@@ -303,8 +349,7 @@ const Follows = () => {
             sx={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "center",
-              height: "50vh",
+              marginTop: "60px",
             }}
           >
             <Stack direction="column" spacing={2}>
@@ -316,65 +361,66 @@ const Follows = () => {
                 <Typography variant="h3" gutterBottom>
                   Friend Request
                 </Typography>
-                <Paper style={{ width: "700px" }}>
+                <Paper sx={{ p: 2 }}>
                   {userInfo?.length > 0 ? (
                     <>
                       {userInfo.map((user, index) => (
                         <>
-                          <Stack direction="row" spacing={2}>
-                            <Container
-                              maxWidth="sm"
-                              sx={{
-                                display: "flex",
-                                justifyContent: "left",
-                                alignItems: "center",
-                                height: "20vh",
-                              }}
-                            >
-                              <div key={index}>
-                                <p>
-                                  <strong>Username:</strong> {user.username}
-                                </p>
-                                <p>
-                                  <strong>First Name:</strong> {user.fName}
-                                </p>
-                                <p>
-                                  <strong>Last Name:</strong> {user.lName}
-                                </p>
-                                <Divider sx={{ my: 1 }} />
-                              </div>
-                            </Container>
-                            <Container
-                              maxWidth="sm"
-                              sx={{
-                                display: "flex",
-                                justifyContent: "right",
-                                alignItems: "center",
-                                height: "20vh",
-                              }}
-                            >
-                              <Stack direction="row" spacing={2}>
-                                <Button
-                                  variant="contained"
-                                  onClick={handleLogout}
-                                >
-                                  Accept
-                                </Button>
-                                <Button
-                                  variant="contained"
-                                  onClick={handleLogout}
-                                >
-                                  Reject
-                                </Button>
-                              </Stack>
-                            </Container>
-                          </Stack>
-                        </>
+                        <Stack direction="row" spacing={2} key={index}>
+                          <Container
+                            maxWidth="sm"
+                            sx={{
+                              display: "flex",
+                              justifyContent: "left",
+                              alignItems: "center",
+                              height: "20vh",
+                            }}
+                          >
+                            <div>
+                              <p>
+                                <strong>Username:</strong> {user.username}
+                              </p>
+                              <p>
+                                <strong>First Name:</strong> {user.fName}
+                              </p>
+                              <p>
+                                <strong>Last Name:</strong> {user.lName}
+                              </p>
+                              
+                            </div>
+                          </Container>
+                          <Container
+                            maxWidth="sm"
+                            sx={{
+                              display: "flex",
+                              justifyContent: "right",
+                              alignItems: "center",
+                              height: "20vh",
+                            }}
+                          >
+                            <Stack direction="row" spacing={2}>
+                              <Button
+                                variant="contained"
+                                onClick={(e) =>
+                                  acceptPendingReq(e, user.username)
+                                }
+                              >
+                                Accept
+                              </Button>
+                              <Button variant="contained"
+                                onClick={(e) =>
+                                  rejectPendingReq(e, user.username)
+                                }>Reject</Button>
+                            </Stack>
+                          </Container>
+                        </Stack>
+                         <Divider sx={{ my: 1 }} />
+                         </>
                       ))}
                     </>
                   ) : (
                     <Typography variant="h6" gutterBottom>
-                      No friends
+                      No New Friend Request
                     </Typography>
                   )}
                 </Paper>

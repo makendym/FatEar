@@ -19,6 +19,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import axios from "axios";
+import Divider from "@mui/material/Divider";
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -295,7 +296,7 @@ function DashboardContent() {
             </Stack>
           </Container>
           <Container>
-            {result.map((result, index) => (
+            {/* {result.map((result, index) => (
               <Paper key={index} value={result}>
                 <p>
                   <strong>Artist:</strong> {result.fname} {result.lname}
@@ -312,7 +313,80 @@ function DashboardContent() {
                   </p>
                 )}
               </Paper>
-            ))}
+            ))} */}
+
+            <Paper sx={{ p: 2 }}>
+              {result?.length > 0 ? (
+                <>
+                  {result.map((result, index) => (
+                    <>
+                      <Stack direction="row" spacing={2} key={index}>
+                        <Container
+                          maxWidth="sm"
+                          sx={{
+                            display: "flex",
+                            justifyContent: "left",
+                            alignItems: "center",
+                            height: "20vh",
+                          }}
+                        >
+                          <div>
+                            <p>
+                              <strong>Artist:</strong> {result.fname}{" "}
+                              {result.lname}
+                            </p>
+                            <p>
+                              <strong>Title:</strong> {result.title}
+                            </p>
+                            <p>
+                              <strong>Album:</strong> {result.albumTitle}
+                            </p>
+                            {result.genre && (
+                              <p>
+                                <strong>Genre:</strong> {result.genre}
+                              </p>
+                            )}
+                          </div>
+                        </Container>
+                        <Container
+                          maxWidth="sm"
+                          sx={{
+                            display: "flex",
+                            justifyContent: "right",
+                            alignItems: "center",
+                            height: "20vh",
+                          }}
+                        >
+                          <Stack direction="row" spacing={2}>
+                            <Button
+                              variant="contained"
+                              // onClick={(e) =>
+                              //   acceptPendingReq(e, user.username)
+                              // }
+                            >
+                              Accept
+                            </Button>
+                            <Button
+                              variant="contained"
+                              // onClick={(e) =>
+                              //   rejectPendingReq(e, user.username)
+                              // }
+                            >
+                              Reject
+                            </Button>
+                          </Stack>
+                        </Container>
+                      </Stack>
+                      <Divider sx={{ my: 1 }} />
+                    </>
+                  ))}
+                </>
+              ) : (
+                <Typography variant="h6" gutterBottom>
+                  No Songs
+                </Typography>
+              )}
+            </Paper>
           </Container>
         </Box>
       </Box>

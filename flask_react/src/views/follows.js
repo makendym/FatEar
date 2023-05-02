@@ -358,103 +358,73 @@ const Follows = () => {
           }}
         >
           <Toolbar />
-          <Box component="span" sx={{ p: 2, border: "1px dashed grey" }}>
-            <Container
-              maxWidth="sm"
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "100vh",
-              }}
-            >
-              <Stack direction="column" spacing={2}>
-                {/* <Stack
-                  direction="column"
-                  spacing={1}
-                  style={{ textAlign: "center", paddingBottom: "50px" }}
-                > */}
-                  <Box sx={{ bgcolor: "background.paper", width: 500 }}>
-                    <AppBar position="static">
-                      <Tabs
-                        value={value}
-                        onChange={handleChange}
-                        indicatorColor="secondary"
-                        textColor="inherit"
-                        variant="fullWidth"
-                        aria-label="full width tabs example"
-                      >
-                        <Tab label="Followers" {...a11yProps(0)} />
-                        <Tab label="Following" {...a11yProps(1)} />
-                      </Tabs>
-                    </AppBar>
+          <Container
+            maxWidth="sm"
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "60px",
+            }}
+          >
+            <Stack direction="column" spacing={2}>
+              <Box sx={{ bgcolor: "background.paper", width: 500 }}>
+                <AppBar position="static">
+                  <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    indicatorColor="secondary"
+                    textColor="inherit"
+                    variant="fullWidth"
+                    aria-label="full width tabs example"
+                  >
+                    <Tab label="Followers" {...a11yProps(0)} />
+                    <Tab label="Following" {...a11yProps(1)} />
+                  </Tabs>
+                </AppBar>
 
-                    <TabPanel value={value} index={0} dir={theme.direction}>
-                      <Paper style={{ width: "400px" }}>
-                        {userFollower?.map((user, index) => (
-                          <>
-                            <div key={index}>
-                              <p>
-                                <strong>Username:</strong> {user.username}
-                              </p>
-                              <p>
-                                <strong>First Name:</strong> {user.fName}
-                              </p>
-                              <p>
-                                <strong>Last Name:</strong> {user.lName}
-                              </p>
-                            </div>
-                            <Divider sx={{ my: 1 }} />
-                          </>
-                        ))}
-                      </Paper>{" "}
-                    </TabPanel>
-                    <TabPanel value={value} index={1} dir={theme.direction}>
-                      <Paper style={{ width: "400px" }}>
-                        {userFollowing?.map((user, index) => (
-                          <>
-                            <div key={index}>
-                              <p>
-                                <strong>Username:</strong> {user.username}
-                              </p>
-                              <p>
-                                <strong>First Name:</strong> {user.fName}
-                              </p>
-                              <p>
-                                <strong>Last Name:</strong> {user.lName}
-                              </p>
-                            </div>
-                            <Divider sx={{ my: 1 }} />
-                          </>
-                        ))}
-                      </Paper>{" "}
-                    </TabPanel>
+                <TabPanel value={value} index={0} dir={theme.direction}>
+                  <Box sx={{ p: 2 }}>
+                    <Paper style={{ width: "400px", overflow: "auto" }}>
+                      {userFollower?.map((user, index) => (
+                        <div key={index}>
+                          <p>
+                            <strong>Username:</strong> {user.username}
+                          </p>
+                          <p>
+                            <strong>First Name:</strong> {user.fName}
+                          </p>
+                          <p>
+                            <strong>Last Name:</strong> {user.lName}
+                          </p>
+                          <Divider sx={{ my: 1 }} />
+                        </div>
+                      ))}
+                    </Paper>
                   </Box>
-                  {/* <Typography variant="h3" gutterBottom>
-                  Followers
-                </Typography>
-                <Paper style={{ width: "700px" }}>
-                  {userInfo?.map((user, index) => (
-                    <>
-                      <div key={index}>
-                        <p>
-                          <strong>Username:</strong> {user.username}
-                        </p>
-                        <p>
-                          <strong>First Name:</strong> {user.fName}
-                        </p>
-                        <p>
-                          <strong>Last Name:</strong> {user.lName}
-                        </p>
-                      </div>
-                      <Divider sx={{ my: 1 }} />
-                    </>
-                  ))}
-                </Paper> */}
-                {/* </Stack> */}
-              </Stack>
-            </Container>
-          </Box>
+                </TabPanel>
+                <TabPanel value={value} index={1} dir={theme.direction}>
+                  <Box sx={{ p: 2 }}>
+                    <Paper style={{ width: "400px", overflow: "auto" }}>
+                      {userFollowing?.map((user, index) => (
+                        <div key={index}>
+                          <p>
+                            <strong>Username:</strong> {user.username}
+                          </p>
+                          <p>
+                            <strong>First Name:</strong> {user.fName}
+                          </p>
+                          <p>
+                            <strong>Last Name:</strong> {user.lName}
+                          </p>
+                          <Divider sx={{ my: 1 }} />
+                        </div>
+                      ))}
+                    </Paper>
+                  </Box>
+                </TabPanel>
+              </Box>
+            </Stack>
+          </Container>
         </Box>
       </Box>
       <Copyright sx={{ mt: 8, mb: 4 }} />
