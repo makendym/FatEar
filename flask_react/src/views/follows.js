@@ -21,9 +21,16 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import MainListItems from "./listItems";
-
+import Backdrop from "@mui/material/Backdrop";
+import Modal from "@mui/material/Modal";
+import Fade from "@mui/material/Fade";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import PropTypes from "prop-types";
+import { useTheme } from "@mui/material/styles";
 
 import { useNavigate } from "react-router-dom";
 
@@ -91,6 +98,39 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`full-width-tabpanel-${index}`}
+      aria-labelledby={`full-width-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+  return {
+    id: `full-width-tab-${index}`,
+    "aria-controls": `full-width-tabpanel-${index}`,
+  };
+}
+
 const mdTheme = createTheme();
 
 const Follows = () => {
@@ -98,7 +138,6 @@ const Follows = () => {
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  const [posts, setPosts] = useState([]);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -108,7 +147,6 @@ const Follows = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get("/home");
-        setPosts(response.data.posts);
         setUsername(response.data.username);
         setLoading(false);
       } catch (error) {
@@ -136,6 +174,61 @@ const Follows = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const style = {
+    position: "absolute",
+    top: "60%",
+    left: "55%",
+    transform: "translate(-50%, -50%)",
+    width: 300,
+    height: 150,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+
+  const [userFollower, setUserFollowers] = useState([]);
+  const [userFollowing, setUserFollowing] = useState([]);
+  const goToProfile = () => {
+    navigate(`/`);
+  };
+
+  useEffect(() => {
+    const fetchPlaylist = async () => {
+      try {
+        const response = await axios.get("/followers");
+        setUserFollowers(response.data[1]);
+        console.log(response.data[1]);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchPlaylist();
+  }, []);
+
+  useEffect(() => {
+    const fetchPlaylist = async () => {
+      try {
+        const response = await axios.get("/following");
+        setUserFollowing(response.data[1]);
+        console.log(response.data[1]);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchPlaylist();
+  }, []);
+  const theme = useTheme();
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  const handleChangeIndex = (index) => {
+    setValue(index);
   };
 
   return (
@@ -222,8 +315,7 @@ const Follows = () => {
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
-                    <MenuItem onClick={handleClose}>Profile</MenuItem>
-                    <MenuItem onClick={handleClose}>My account</MenuItem>
+                    <MenuItem onClick={goToProfile}>Profile</MenuItem>
                   </Menu>
                 </Stack>
               </Container>
@@ -271,24 +363,66 @@ const Follows = () => {
             sx={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "center",
-              height: "70vh",
+              marginTop: "60px",
             }}
           >
             <Stack direction="column" spacing={2}>
-              <Stack
-                direction="column"
-                spacing={1}
-                style={{ textAlign: "center", paddingBottom: "50px" }}
-              >
-                <Typography variant="h2" gutterBottom>
-                  Welcome To FatEAR™ 🎧
-                </Typography>
+              <Box sx={{ bgcolor: "background.paper", width: 500 }}>
+                <AppBar position="static">
+                  <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    indicatorColor="secondary"
+                    textColor="inherit"
+                    variant="fullWidth"
+                    aria-label="full width tabs example"
+                  >
+                    <Tab label="Followers" {...a11yProps(0)} />
+                    <Tab label="Following" {...a11yProps(1)} />
+                  </Tabs>
+                </AppBar>
 
-                <Typography variant="subtitle1" align="center" gutterBottom>
-                  The Follows Page
-                </Typography>
-              </Stack>
+                <TabPanel value={value} index={0} dir={theme.direction}>
+                  <Box sx={{ p: 2 }}>
+                    <Paper style={{ width: "400px", overflow: "auto" }}>
+                      {userFollower?.map((user, index) => (
+                        <div key={index}>
+                          <p>
+                            <strong>Username:</strong> {user.username}
+                          </p>
+                          <p>
+                            <strong>First Name:</strong> {user.fName}
+                          </p>
+                          <p>
+                            <strong>Last Name:</strong> {user.lName}
+                          </p>
+                          <Divider sx={{ my: 1 }} />
+                        </div>
+                      ))}
+                    </Paper>
+                  </Box>
+                </TabPanel>
+                <TabPanel value={value} index={1} dir={theme.direction}>
+                  <Box sx={{ p: 2 }}>
+                    <Paper style={{ width: "400px", overflow: "auto" }}>
+                      {userFollowing?.map((user, index) => (
+                        <div key={index}>
+                          <p>
+                            <strong>Username:</strong> {user.username}
+                          </p>
+                          <p>
+                            <strong>First Name:</strong> {user.fName}
+                          </p>
+                          <p>
+                            <strong>Last Name:</strong> {user.lName}
+                          </p>
+                          <Divider sx={{ my: 1 }} />
+                        </div>
+                      ))}
+                    </Paper>
+                  </Box>
+                </TabPanel>
+              </Box>
             </Stack>
           </Container>
         </Box>

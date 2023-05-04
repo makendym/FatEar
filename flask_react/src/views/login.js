@@ -39,7 +39,7 @@ const theme = createTheme();
 
 function Login() {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [pwd, setPwd] = useState("");
   const [error, setError] = useState("");
   const [profileData, setProfileData] = useState(null);
 
@@ -75,7 +75,7 @@ function Login() {
     }
   };
   const handleSubmit = (event) => {
-    console.log("username :" + username + "\nPass: " + password);
+    console.log("username :" + username + "\nPass: " + pwd);
     event.preventDefault();
     const formData = new FormData(event.target);
     if (!loading) {
@@ -84,7 +84,7 @@ function Login() {
       timer.current = window.setTimeout(() => {
         axios({
           method: "POST",
-          url: "/loginAuth",
+          url: "/loginAuths",
           data: formData,
           headers: {
             "Content-Type": "multipart/form-data",
@@ -94,7 +94,7 @@ function Login() {
             const res = response.data;
             setProfileData({
               username: res.username,
-              password: res.password,
+              pwd: res.pwd,
             });
             if (response.data.hasOwnProperty("success")) {
               setSuccess(true);
@@ -159,13 +159,13 @@ function Login() {
               margin="normal"
               required
               fullWidth
-              name="password"
+              name="pwd"
               label="Password"
               type="password"
-              id="password"
+              id="pwd"
               autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={pwd}
+              onChange={(e) => setPwd(e.target.value)}
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}

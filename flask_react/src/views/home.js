@@ -13,7 +13,7 @@ function Home() {
     const fetchPosts = async () => {
       try {
         const response = await axios.get("/home");
-        setPosts(response.data.posts);
+        //setPosts(response.data.posts);
         setUsername(response.data.username);
         setLoading(false);
       } catch (error) {

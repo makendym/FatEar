@@ -21,7 +21,10 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import MainListItems from "./listItems";
-
+import Backdrop from "@mui/material/Backdrop";
+import Modal from "@mui/material/Modal";
+import Fade from "@mui/material/Fade";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 
@@ -93,12 +96,11 @@ const Drawer = styled(MuiDrawer, {
 
 const mdTheme = createTheme();
 
-const FriendRequest = () => {
+const Follows = () => {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  const [posts, setPosts] = useState([]);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -108,7 +110,6 @@ const FriendRequest = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get("/home");
-        setPosts(response.data.posts);
         setUsername(response.data.username);
         setLoading(false);
       } catch (error) {
@@ -137,6 +138,84 @@ const FriendRequest = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const style = {
+    position: "absolute",
+    top: "60%",
+    left: "55%",
+    transform: "translate(-50%, -50%)",
+    width: 300,
+    height: 150,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+
+  const [userInfo, setUserInfo] = useState([]);
+
+  const acceptPendingReq = (event, user2) => {
+    event.preventDefault();
+
+    axios
+      .post("/accept", {
+        user2: user2,
+      })
+      .then((response) => {
+        const res = response.data;
+        console.log(res);
+        console.log(user2);
+        fetchPendingStatus();
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
+  const rejectPendingReq = (event, user2) => {
+    event.preventDefault();
+
+    axios
+      .post("/reject", {
+        user2: user2,
+      })
+      .then((response) => {
+        const res = response.data;
+        console.log(res);
+        console.log(user2);
+        fetchPendingStatus();
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
+  const goToProfile = () => {
+    navigate(`/`);
+  };
+
+
+
+  const fetchPendingStatus = async () => {
+    try{
+      const response = await axios.get("/pending");
+      setUserInfo(response.data[1]);
+        console.log(response.data[1]);
+    }catch(error){
+        console.log(error);
+      }
+  };
+  useEffect(() => {
+    fetchPendingStatus();
+  }, []);
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -222,8 +301,7 @@ const FriendRequest = () => {
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
-                    <MenuItem onClick={handleClose}>Profile</MenuItem>
-                    <MenuItem onClick={handleClose}>My account</MenuItem>
+                    <MenuItem onClick={goToProfile}>Profile</MenuItem>
                   </Menu>
                 </Stack>
               </Container>
@@ -271,8 +349,7 @@ const FriendRequest = () => {
             sx={{
               display: "flex",
               justifyContent: "center",
-              alignItems: "center",
-              height: "70vh",
+              marginTop: "60px",
             }}
           >
             <Stack direction="column" spacing={2}>
@@ -281,13 +358,72 @@ const FriendRequest = () => {
                 spacing={1}
                 style={{ textAlign: "center", paddingBottom: "50px" }}
               >
-                <Typography variant="h2" gutterBottom>
-                  Welcome To FatEAR™ 🎧
+                <Typography variant="h3" gutterBottom>
+                  Friend Request
                 </Typography>
-
-                <Typography variant="subtitle1" align="center" gutterBottom>
-                  The FriendRequest Page
-                </Typography>
+                <Paper sx={{ p: 2 }}>
+                  {userInfo?.length > 0 ? (
+                    <>
+                      {userInfo.map((user, index) => (
+                        <>
+                        <Stack direction="row" spacing={2} key={index}>
+                          <Container
+                            maxWidth="sm"
+                            sx={{
+                              display: "flex",
+                              justifyContent: "left",
+                              alignItems: "center",
+                              height: "20vh",
+                            }}
+                          >
+                            <div>
+                              <p>
+                                <strong>Username:</strong> {user.username}
+                              </p>
+                              <p>
+                                <strong>First Name:</strong> {user.fName}
+                              </p>
+                              <p>
+                                <strong>Last Name:</strong> {user.lName}
+                              </p>
+                              
+                            </div>
+                          </Container>
+                          <Container
+                            maxWidth="sm"
+                            sx={{
+                              display: "flex",
+                              justifyContent: "right",
+                              alignItems: "center",
+                              height: "20vh",
+                            }}
+                          >
+                            <Stack direction="row" spacing={2}>
+                              <Button
+                                variant="contained"
+                                onClick={(e) =>
+                                  acceptPendingReq(e, user.username)
+                                }
+                              >
+                                Accept
+                              </Button>
+                              <Button variant="contained"
+                                onClick={(e) =>
+                                  rejectPendingReq(e, user.username)
+                                }>Reject</Button>
+                            </Stack>
+                          </Container>
+                        </Stack>
+                         <Divider sx={{ my: 1 }} />
+                         </>
+                      ))}
+                    </>
+                  ) : (
+                    <Typography variant="h6" gutterBottom>
+                      No New Friend Request
+                    </Typography>
+                  )}
+                </Paper>
               </Stack>
             </Stack>
           </Container>
@@ -297,4 +433,4 @@ const FriendRequest = () => {
     </ThemeProvider>
   );
 };
-export default FriendRequest;
+export default Follows;

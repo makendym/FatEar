@@ -37,8 +37,11 @@ function Copyright(props) {
 const theme = createTheme();
 
 function Register() {
+  const [fname, setFname] = useState("");
+  const [lname, setLname] = useState("");
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [pwd, setPwd] = useState("");
+  const [nickname, setNickname] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [profileData, setProfileData] = useState(null);
@@ -50,7 +53,7 @@ function Register() {
 
     axios({
       method: "POST",
-      url: "/registerAuth",
+      url: "/registerAuths",
       data: formData,
       headers: {
         "Content-Type": "multipart/form-data",
@@ -60,7 +63,10 @@ function Register() {
         const res = response.data;
         setProfileData({
           username: res.username,
-          password: res.password,
+          pwd: res.pwd,
+          fname: res.fname,
+          lname: res.lname,
+          nickname: res.nickname
         });
         if (response.status === 200) {
           setSuccess(res.success);
@@ -139,10 +145,27 @@ function Register() {
                 <TextField
                   required
                   fullWidth
+                  id="fname"
+                  label="First Name"
+                  name="fname"
+                  value={fname}
+                  onChange={(event) => setFname(event.target.value)}
+                />
+                <TextField
+                  required
+                  fullWidth
+                  id="lname"
+                  label="Last Name"
+                  name="lname"
+                  value={lname}
+                  onChange={(event) => setLname(event.target.value)}
+                />
+                <TextField
+                  required
+                  fullWidth
                   id="username"
                   label="Username"
                   name="username"
-                  autoComplete="username"
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
                 />
@@ -151,13 +174,22 @@ function Register() {
                 <TextField
                   required
                   fullWidth
-                  name="password"
+                  name="pwd"
                   label="Password"
                   type="password"
-                  id="password"
+                  id="pwd"
                   autoComplete="new-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  value={pwd}
+                  onChange={(event) => setPwd(event.target.value)}
+                />
+                <TextField
+                  required
+                  fullWidth
+                  id="nickname"
+                  label="Nickname"
+                  name="nickname"
+                  value={nickname}
+                  onChange={(event) => setNickname(event.target.value)}
                 />
               </Grid>
               <Grid item xs={12}>

@@ -103,6 +103,9 @@ const Post = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+  const goToProfile = () => {
+    navigate(`/userprofile`);
+  };
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -222,8 +225,7 @@ const Post = () => {
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                   >
-                    <MenuItem onClick={handleClose}>Profile</MenuItem>
-                    <MenuItem onClick={handleClose}>My account</MenuItem>
+                    <MenuItem onClick={goToProfile}>Profile</MenuItem>
                   </Menu>
                 </Stack>
               </Container>
