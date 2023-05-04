@@ -11,6 +11,7 @@ import Friends from "./views/friends"
 import FriendRequest from "./views/friendsRequest"
 import Playlist from "./views/playlist"
 import UserProfile from "./views/userProfile"
+import ShowSongs from "./views/showSongs"
 function App() {
   return (
     <>
@@ -27,6 +28,7 @@ function App() {
           <Route exact path="/userhome" element={<DashboardContentUser/>} />
           <Route exact path="/playlist" element={<Playlist/>} />
           <Route exact path="/userprofile" element={<UserProfile/>} />
+          <Route exact path="/playlistsongs/:title" element={<ShowSongs />} />
         </Routes>
       </Router>
     </>

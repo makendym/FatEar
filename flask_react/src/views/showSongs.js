@@ -27,7 +27,7 @@ import Fade from "@mui/material/Fade";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-import ShowSongs from './showSongs'
+import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -96,7 +96,7 @@ const Drawer = styled(MuiDrawer, {
 
 const mdTheme = createTheme();
 
-const Playlist = () => {
+const ShowSongs = (props) => {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -105,13 +105,6 @@ const Playlist = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const goToSongs = (title) => {
-    navigate(`/playlistsongs/${title}`);
-  };
-
-  const goToProfile = () => {
-    navigate(`/userprofile`);
-  };
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -158,48 +151,29 @@ const Playlist = () => {
     boxShadow: 24,
     p: 4,
   };
-  const [open2, setOpen2] = React.useState(false);
-  const handleOpen = () => setOpen2(true);
-  const handleClose2 = () => setOpen2(false);
-  const [playlistTitle, setPlaylistTitle] = useState("");
-  const [userPlaylist, setUserPlaylist] = useState([]);
-  const handlePlaylistTittleChange = (event) => {
-    setPlaylistTitle(event.target.value);
+
+  const [userInfo, setUserInfo] = useState([]);
+
+  const goToProfile = () => {
+    navigate(`/userprofile`);
   };
+
+  const { title } = useParams();
 
   useEffect(() => {
     const fetchPlaylist = async () => {
       try {
-        const response = await axios.get("/list-user-playlist");
-        setUserPlaylist(response.data[1]);
-        console.log(response.data[1]);
+        const response = await axios.get(`/show-playlist-songs?title=${title}`);
+        setUserInfo(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error(error);
       }
     };
-    fetchPlaylist();
+    
+    fetchPlaylist(); 
   }, []);
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    axios
-      .post("/create-playlist", {
-        playlisttitle: playlistTitle,
-      })
-      .then((response) => {
-        const res = response.data;
-        console.log(res);
-        console.log(playlistTitle);
-      })
-      .catch((error) => {
-        if (error.response) {
-          console.log(error.response);
-          console.log(error.response.status);
-          console.log(error.response.headers);
-        }
-      });
-  };
-
+  
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
@@ -328,12 +302,12 @@ const Playlist = () => {
         >
           <Toolbar />
           <Container
-            maxWidth="sm"
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: "60px",
-            }}
+             maxWidth="sm"
+             sx={{
+               display: "flex",
+               justifyContent: "center",
+               marginTop: "60px",
+             }}
           >
             <Stack direction="column" spacing={2}>
               <Stack
@@ -341,67 +315,33 @@ const Playlist = () => {
                 spacing={1}
                 style={{ textAlign: "center", paddingBottom: "50px" }}
               >
-                <Typography variant="h2" gutterBottom>
-                  FatEAR™ 🎧 Playlist
+                <Typography variant="h3" gutterBottom>
+                  List songs from this playlist
                 </Typography>
-
-                <Button onClick={handleOpen}>
-                  <AddCircleIcon style={{ marginRight: "10px" }} />
-                  New Playlist
-                </Button>
-                <Modal
-                  aria-labelledby="transition-modal-title"
-                  aria-describedby="transition-modal-description"
-                  open={open2}
-                  onClose={handleClose2}
-                  closeAfterTransition
-                  slots={{ backdrop: Backdrop }}
-                  slotProps={{
-                    backdrop: {
-                      timeout: 500,
-                    },
-                  }}
-                >
-                  <Fade in={open2}>
-                    <Box
-                      component="form"
-                      noValidate
-                      onSubmit={handleSubmit}
-                      sx={style}
-                    >
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        style={{ textAlign: "center", paddingBottom: "50px" }}
-                      >
-                        <TextField
-                          id="outlined-basic"
-                          label="Enter Playlist Name"
-                          variant="outlined"
-                          style={{ width: "20vw" }}
-                          value={playlistTitle}
-                          onChange={handlePlaylistTittleChange}
-                        />
-                        <Button variant="contained" type="submit">
-                          Add
-                        </Button>
-                      </Stack>
-                    </Box>
-                  </Fade>
-                </Modal>
-                {userPlaylist.map((userPlaylist, index) => (
-                  <Paper key={index}>
-                    <Button
-                      onClick={() => goToSongs(userPlaylist.playlistTitle)}
-                    >
-                      <p>
-                        <strong>Playlist Title:</strong>{" "}
-                        {userPlaylist.playlistTitle}
-                      </p>
-                    </Button>
-                  </Paper>
-                  
-                ))}
+                <Paper style={{ width: "700px" }}>
+                  {userInfo?.length > 0 ? (
+                    <>
+                      {userInfo.map((user, index) => (
+                        <div key={index}>
+                          <p>
+                            <strong>Song title:</strong> {user.title}
+                          </p>
+                          <p>
+                            <strong>First Name:</strong> {user.fname}
+                          </p>
+                          <p>
+                            <strong>Last Name:</strong> {user.lname}
+                          </p>
+                          <Divider sx={{ my: 1 }} />
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <Typography variant="h6" gutterBottom>
+                      No songs in playlist
+                    </Typography>
+                  )}
+                </Paper>
               </Stack>
             </Stack>
           </Container>
@@ -411,4 +351,4 @@ const Playlist = () => {
     </ThemeProvider>
   );
 };
-export default Playlist;
+export default ShowSongs;

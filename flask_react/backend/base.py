@@ -379,6 +379,7 @@ def postRating():
     user = session['username']
     songId = request.json.get('songId')
     stars = request.json.get('stars')
+    cursor = conn.cursor()
     query ="INSERT INTO rateSong VALUES (%s, %s, %s, %s)"
     cursor.execute(query, (user, songId, stars,date.today()))
     conn.commit()
@@ -386,13 +387,30 @@ def postRating():
     return jsonify({"success": True})
 
 
-@api.route('/addtoplay', methods=['POST'])
-def addToPlaylist():
+@api.route('/addtoplaylist', methods=['POST'])
+def add_to_playlist():
     user = session['username']
     playlistTitle = request.json.get('playlistTitle')
-    songId = request.json.get('songId')
+    songID = request.json.get('songID')
+    cursor = conn.cursor()
     query = "INSERT INTO songInPlaylist VALUES (%s, %s, %s)"
-    cursor.execute(query, (user, playlistTitle, songId))
+    cursor.execute(query, (playlistTitle, user, songID))
     conn.commit()
     cursor.close()
-    return jsonify({"success": True})
+    return "Song added to playlist successfully"
+
+@api.route('/show-playlist-songs')
+def showPlaylistSongs():
+    user = session.get('username')
+    title = request.args.get('title')
+    cursor = conn.cursor()
+    query = "SELECT song.title, artist.fname, artist.lname \
+             FROM song \
+             JOIN songInPlaylist ON song.songID = songInPlaylist.songID \
+             JOIN artistPerformsSong ON artistPerformsSong.songID = song.songID \
+             JOIN artist ON artist.artistID = artistPerformsSong.artistID \
+             WHERE songInPlaylist.playlistTitle = %s AND songInPlaylist.username = %s"
+    cursor.execute(query, (title, user))
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify(data)
