@@ -111,7 +111,7 @@ const Post = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get("/home");
-        setPosts(response.data.posts);
+        setPosts(response.data);
         setUsername(response.data.username);
         setLoading(false);
       } catch (error) {
@@ -122,6 +122,21 @@ const Post = () => {
     fetchPosts();
   }, []);
 
+  useEffect(() => {
+    const fetchPostsPage = async () => {
+      try {
+        const response = await axios.get("/show-post");
+        setPosts(response.data);
+        setUsername(response.data.username);
+        setLoading(false);
+        console.log(response.data);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+    fetchPostsPage();
+  }, []);
   const handleLogout = async () => {
     try {
       await axios.get("/logout");
@@ -269,13 +284,12 @@ const Post = () => {
         >
           <Toolbar />
           <Container
-            maxWidth="sm"
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "70vh",
-            }}
+             maxWidth="sm"
+             sx={{
+               display: "flex",
+               justifyContent: "center",
+               marginTop: "60px",
+             }}
           >
             <Stack direction="column" spacing={2}>
               <Stack
@@ -284,12 +298,57 @@ const Post = () => {
                 style={{ textAlign: "center", paddingBottom: "50px" }}
               >
                 <Typography variant="h2" gutterBottom>
-                  Welcome To FatEAR™ 🎧
+                  FatEAR™ 🎧
                 </Typography>
 
                 <Typography variant="subtitle1" align="center" gutterBottom>
                   The Post Page
                 </Typography>
+
+                <Paper style={{ width: "700px" }}>
+                  {posts?.length > 0 ? (
+                    <>
+                      {posts.map((user, index) => (
+                        <>
+                          <Stack direction="row" spacing={2} key={index}>
+                            <Container
+                              maxWidth="sm"
+                              sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                height: "20vh",
+                              }}
+                            >
+                              <div>
+                                <p>
+                                  <strong>Username:</strong> {user.username}
+                                </p>
+                                <p>
+                                  <strong>Review Type:</strong>{" "}
+                                  {user.reviewType}
+                                </p>
+                                <p>
+                                  <strong>Review:</strong> {user.reviewText}
+                                </p>
+                                <p>
+                                  <strong>Date Posted:</strong>{" "}
+                                  {user.reviewDate}
+                                </p>
+                              </div>
+                            </Container>
+                         
+                          </Stack>
+                          <Divider sx={{ my: 1 }} />
+                        </>
+                      ))}
+                    </>
+                  ) : (
+                    <Typography variant="h6" gutterBottom>
+                      No New Post
+                    </Typography>
+                  )}
+                </Paper>
               </Stack>
             </Stack>
           </Container>
