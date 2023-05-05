@@ -20,7 +20,7 @@ conn = pymysql.connect(host='localhost',
                        port=8889,
                        user='root',
                        password='root',
-                       db='FatEar',
+                       db='Project_pt2',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
@@ -97,6 +97,8 @@ def loginAuth():
         return jsonify({"error": error})
 
 @api.route('/loginAuths', methods=['GET', 'POST'])
+
+
 def loginAuths():
     # Grab information from the form
     username = request.form.get('username')
@@ -107,12 +109,13 @@ def loginAuths():
     query = 'SELECT * FROM user WHERE username = %s AND pwd = %s'
     cursor.execute(query, (username, pwd))
     data = cursor.fetchone()
-    cursor.close()
+    
 
     # If the username and password are valid, store the username in the session
     if data:
         # Set lastLogin to today's date
-        cursor.execute('UPDATE user SET lastLogin = date.today(), WHERE username = %s', (username,))
+        query = 'UPDATE user SET lastLogin = %s WHERE username = %s'
+        cursor.execute(query,(date.today(), username,))
         conn.commit()
         cursor.close()
         session['username'] = username
@@ -160,6 +163,7 @@ def registerAuths():
     fname = request.form['fname']
     lname = request.form['lname']
     nickname = request.form['nickname']
+
     # Cursor used to send queries
     cursor = conn.cursor()
 
@@ -175,30 +179,31 @@ def registerAuths():
     else:
         # Inserts new user data into the database
         ins = 'INSERT INTO user (username, pwd, fname, lname, lastlogin, nickname) VALUES (%s, %s, %s, %s, %s)'
-            if len(username) < 1 or len(username) > 10:
-                error = "Username cannot exceed 10 characters."
-                return jsonify({"error": error})
+        if len(username) < 1 or len(username) > 10:
+            error = "Username cannot exceed 10 characters."
+            return jsonify({"error": error})
 
-            if len(pwd) > 15:
-                error = "Password cannot exceed 15 characters."
-                return jsonify({"error": error})
+        if len(pwd) > 15:
+            error = "Password cannot exceed 15 characters."
+            return jsonify({"error": error})
 
-            if len(fname) < 1 or len(fname) > 20:
-                error = "First name must be between 1 and 20 characters."
-                return jsonify({"error": error})
+        if len(fname) < 1 or len(fname) > 20:
+            error = "First name must be between 1 and 20 characters."
+            return jsonify({"error": error})
 
-            if len(lname) < 1 or len(lname) > 20:
-                error = "Last name must be between 1 and 20 characters."
-                return jsonify({"error": error})
+        if len(lname) < 1 or len(lname) > 20:
+            error = "Last name must be between 1 and 20 characters."
+            return jsonify({"error": error})
 
-            if len(nickname) > 20:
-                error = "Nickname cannot exceed 20 characters."
-                return jsonify({"error": error})
+        if len(nickname) > 20:
+            error = "Nickname cannot exceed 20 characters."
+            return jsonify({"error": error})
 
         cursor.execute(ins, (username, pwd, fname, lname, date.today(), nickname))
         conn.commit()
         cursor.close()
         return jsonify({"success": "User registered successfully"})
+
 
 
 
@@ -410,10 +415,9 @@ def reject():
     cursor.close()
     return jsonify({"success": True})
 
-
 @api.route('/post-review', methods=['POST'])
 def postReview():
-    user = session['username']
+    user = session.get('username')
     songId = request.json.get('songId')
     review = request.json.get('review')
     cursor = conn.cursor()
@@ -425,32 +429,28 @@ def postReview():
 
     # If user has already reviewed the song, ask if they want to update their review
     if existing_review:
-        update_review = input("You have already reviewed this song. Do you want to update your review? (y/n): ")
-        if update_review == 'y':
-            # Check review character count
-            if len(review) > 100:
-                return jsonify({"error": True, "message": "Review exceeds character limit"})
-            else:
-                query = "UPDATE reviewSong SET review = %s, date = %s WHERE username = %s AND songId = %s"
-                cursor.execute(query, (review, date.today(), user, songId))
-                conn.commit()
-                cursor.close()
-                return jsonify({"success": True, "message": "Review updated successfully"})
-        else:
+        if len(review) > 100:
             cursor.close()
-            return jsonify({"success": True})
-
+            return jsonify({"error": True, "message": "Review exceeds character limits"})
+        else:
+            query = "UPDATE reviewSong SET review = %s, date = %s WHERE username = %s AND songId = %s"
+            cursor.execute(query, (review, date.today(), user, songId))
+            conn.commit()
+            cursor.close()
+            return jsonify({"success": True, "message": "Review updated successfully"})
     # If user has not reviewed the song, insert a new review
     else:
         # Check review character count
         if len(review) > 100:
-            return jsonify({"error": True, "message": "Review exceeds character limit"})
+            cursor.close()
+            return jsonify({"error": True, "message": "Review exceeds character limitss"})
         else:
             query = "INSERT INTO reviewSong VALUES (%s, %s, %s, %s)"
             cursor.execute(query, (user, songId, review, date.today()))
             conn.commit()
             cursor.close()
-            return jsonify({"success": True}) 
+            return jsonify({"success": True})
+
     
 
 
@@ -479,7 +479,7 @@ def postRating():
                 return jsonify({"success": "Your rating has been updated."})
             else:
                 cursor.close()
-                return jsonify({"error": "Invalid rating value. Enter a rating between 1 and 5."})
+                return jsonify({"error": "Invalid rating value. Enter a rating value between 1 and 5."})
         else:
             return jsonify({"message": "Your rating was not changed."})
 
@@ -494,13 +494,13 @@ def postRating():
             return jsonify({"success": "Your rating has been added."})
         else:
             cursor.close()
-            return jsonify({"error": "Invalid rating value. Enter a rating between 1 and 5."})
+            return jsonify({"error": "Invalid rating value. Enter ratings between 1 and 5."})
 
 
 
 #THIS IS FOR ALBUM REVIEW
-@api.route('/post-review', methods=['POST'])
-def postReview():
+@api.route('/post-album-review', methods=['POST'])
+def postAlbumReview():
     user = session['username']
     songId = request.json.get('albumId')
     review = request.json.get('review')
@@ -513,21 +513,14 @@ def postReview():
 
     # If user has already reviewed the album, ask if they want to update their review
     if existing_review:
-        update_review = input("You have already reviewed this album. Do you want to update your review? (y/n): ")
-        if update_review == 'y':
-            # Check review character count
-            if len(review) > 100:
-                return jsonify({"error": True, "message": "Review exceeds character limit"})
-            else:
+        if len(review) > 100:
+            return jsonify({"error": True, "message": "Review exceeds character limit"})
+        else:
                 query = "UPDATE reviewAlbum SET review = %s, date = %s WHERE username = %s AND albumId = %s"
                 cursor.execute(query, (review, date.today(), user, albumId))
                 conn.commit()
                 cursor.close()
                 return jsonify({"success": True, "message": "Review updated successfully"})
-        else:
-            cursor.close()
-            return jsonify({"success": True})
-
     # If user has not reviewed the album, insert a new review
     else:
         # Check review character count
@@ -543,8 +536,8 @@ def postReview():
     
 
 #THIS IS FOR ALBUM RARING
-@api.route('/post-rating', methods=['POST'])
-def postRating():
+@api.route('/post-album-rating', methods=['POST'])
+def postAlbumRating():
     user = session['username']
     songId = request.json.get('albumId')
     stars = request.json.get('stars')
@@ -557,20 +550,15 @@ def postRating():
 
     # If the user has already rated the album, ask if they want to change their rating
     if data:
-        change_rating = input("You have already rated this album. Do you want to change your rating? (y/n)")
-        if change_rating.lower() == "y":
-            # Check if stars value is valid (between 1 and 5)
-            if 1 <= stars <= 5:
-                query = "UPDATE rateAlbum SET rating = %s, date = %s WHERE username = %s AND albumId = %s"
-                cursor.execute(query, (stars, date.today(), user, albumId))
-                conn.commit()
-                cursor.close()
-                return jsonify({"success": "Your rating has been updated."})
-            else:
-                cursor.close()
-                return jsonify({"error": "Invalid rating value. Enter a rating between 1 and 5."})
+        if 1 <= stars <= 5:
+            query = "UPDATE rateAlbum SET rating = %s, date = %s WHERE username = %s AND albumId = %s"
+            cursor.execute(query, (stars, date.today(), user, albumId))
+            conn.commit()
+            cursor.close()
+            return jsonify({"success": "Your rating has been updated."})
         else:
-            return jsonify({"message": "Your rating was not changed."})
+            cursor.close()
+            return jsonify({"error": "Invalid rating value. Enter a rating between 1 and 5."})
 
     # If the user has not rated the album, insert a new rating
     else:
