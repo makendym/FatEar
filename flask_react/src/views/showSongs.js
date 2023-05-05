@@ -21,10 +21,13 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import MainListItems from "./listItems";
-
+import Backdrop from "@mui/material/Backdrop";
+import Modal from "@mui/material/Modal";
+import Fade from "@mui/material/Fade";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-
+import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -93,25 +96,20 @@ const Drawer = styled(MuiDrawer, {
 
 const mdTheme = createTheme();
 
-const Post = () => {
+const ShowSongs = (props) => {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
-  const [posts, setPosts] = useState([]);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const goToProfile = () => {
-    navigate(`/userprofile`);
-  };
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get("/home");
-        setPosts(response.data);
         setUsername(response.data.username);
         setLoading(false);
       } catch (error) {
@@ -122,21 +120,6 @@ const Post = () => {
     fetchPosts();
   }, []);
 
-  useEffect(() => {
-    const fetchPostsPage = async () => {
-      try {
-        const response = await axios.get("/show-post");
-        setPosts(response.data);
-        setUsername(response.data.username);
-        setLoading(false);
-        console.log(response.data);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
-      }
-    };
-    fetchPostsPage();
-  }, []);
   const handleLogout = async () => {
     try {
       await axios.get("/logout");
@@ -156,6 +139,41 @@ const Post = () => {
     setAnchorEl(null);
   };
 
+  const style = {
+    position: "absolute",
+    top: "60%",
+    left: "55%",
+    transform: "translate(-50%, -50%)",
+    width: 300,
+    height: 150,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+
+  const [userInfo, setUserInfo] = useState([]);
+
+  const goToProfile = () => {
+    navigate(`/userprofile`);
+  };
+
+  const { title } = useParams();
+
+  useEffect(() => {
+    const fetchPlaylist = async () => {
+      try {
+        const response = await axios.get(`/show-playlist-songs?title=${title}`);
+        setUserInfo(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    
+    fetchPlaylist(); 
+  }, []);
+  
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
@@ -297,55 +315,30 @@ const Post = () => {
                 spacing={1}
                 style={{ textAlign: "center", paddingBottom: "50px" }}
               >
-                <Typography variant="h2" gutterBottom>
-                  FatEAR™ 🎧
+                <Typography variant="h3" gutterBottom>
+                  List songs from this playlist
                 </Typography>
-
-                <Typography variant="subtitle1" align="center" gutterBottom>
-                  The Post Page
-                </Typography>
-
                 <Paper style={{ width: "700px" }}>
-                  {posts?.length > 0 ? (
+                  {userInfo?.length > 0 ? (
                     <>
-                      {posts.map((user, index) => (
-                        <>
-                          <Stack direction="row" spacing={2} key={index}>
-                            <Container
-                              maxWidth="sm"
-                              sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                height: "20vh",
-                              }}
-                            >
-                              <div>
-                                <p>
-                                  <strong>Username:</strong> {user.username}
-                                </p>
-                                <p>
-                                  <strong>Review Type:</strong>{" "}
-                                  {user.reviewType}
-                                </p>
-                                <p>
-                                  <strong>Review:</strong> {user.reviewText}
-                                </p>
-                                <p>
-                                  <strong>Date Posted:</strong>{" "}
-                                  {user.reviewDate}
-                                </p>
-                              </div>
-                            </Container>
-                         
-                          </Stack>
+                      {userInfo.map((user, index) => (
+                        <div key={index}>
+                          <p>
+                            <strong>Song title:</strong> {user.title}
+                          </p>
+                          <p>
+                            <strong>First Name:</strong> {user.fname}
+                          </p>
+                          <p>
+                            <strong>Last Name:</strong> {user.lname}
+                          </p>
                           <Divider sx={{ my: 1 }} />
-                        </>
+                        </div>
                       ))}
                     </>
                   ) : (
                     <Typography variant="h6" gutterBottom>
-                      No New Post
+                      No songs in playlist
                     </Typography>
                   )}
                 </Paper>
@@ -358,4 +351,4 @@ const Post = () => {
     </ThemeProvider>
   );
 };
-export default Post;
+export default ShowSongs;

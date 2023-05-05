@@ -157,6 +157,7 @@ function DashboardContentUser() {
         params: {
           genre: genre,
           search: search,
+          rating: rating,
         },
       })
       .then((response) => {
@@ -201,7 +202,8 @@ function DashboardContentUser() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [value, setValue] = React.useState(2);
+  const [rateValue, setRateValue] = React.useState(2);
+
 
   const [open2, setOpen2] = React.useState(false);
   const handleOpen = () => setOpen2(true);
@@ -215,7 +217,6 @@ function DashboardContentUser() {
   const handleOpen3 = () => {
     fetchPlaylist();
     setOpen3(true);
-    
   };
   const handleClose3 = () => setOpen3(false);
   const [playlist, setPlaylist] = useState([]);
@@ -241,6 +242,31 @@ function DashboardContentUser() {
     boxShadow: 24,
     p: 4,
   };
+
+  const addSongToPlaylist = (playlistTitle, songId) => {
+    if (!songId) {
+      console.error("Error: song ID cannot be null");
+      return;
+    }
+    axios
+      .post("/addtoplaylist", {
+        playlistTitle: playlistTitle,
+        songID: songId,
+      })
+      .then((response) => {
+        const res = response.data;
+        console.log(res);
+        console.log(playlistTitle);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
@@ -437,11 +463,11 @@ function DashboardContentUser() {
                         onChange={handleRatingChange}
                       >
                         <MenuItem value="">None</MenuItem>
-                        <MenuItem value={1}>1</MenuItem>
-                        <MenuItem value={2}>2</MenuItem>
-                        <MenuItem value={3}>3</MenuItem>
-                        <MenuItem value={4}>4</MenuItem>
-                        <MenuItem value={5}>5</MenuItem>
+                        <MenuItem value={1}>1+</MenuItem>
+                        <MenuItem value={2}>2+</MenuItem>
+                        <MenuItem value={3}>3+</MenuItem>
+                        <MenuItem value={4}>4+</MenuItem>
+                        <MenuItem value={5}>5+</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>
@@ -508,6 +534,7 @@ function DashboardContentUser() {
                             )}
                           </div>
                         </Container>
+
                         <Container
                           maxWidth="sm"
                           sx={{
@@ -527,15 +554,20 @@ function DashboardContentUser() {
                                 Rate Song
                               </Typography>
                               <Rating
+                                key={index}
                                 name="simple-controlled"
-                                value={value}
+                                value={result.stars}
                                 onChange={(event, newValue) => {
-                                  setValue(newValue);
+                                  setRateValue(newValue);
                                 }}
                               />
                             </Box>
 
-                            <Button variant="contained" onClick={handleOpen}>
+                            <Button
+                              key={index}
+                              variant="contained"
+                              onClick={handleOpen}
+                            >
                               <CommentIcon style={{ paddingRight: "5px" }} />
                               Post
                             </Button>
@@ -588,7 +620,11 @@ function DashboardContentUser() {
                               </Fade>
                             </Modal>
 
-                            <Button variant="contained" onClick={handleOpen3}>
+                            <Button
+                              key={index}
+                              variant="contained"
+                              onClick={handleOpen3}
+                            >
                               <AddIcon style={{ paddingRight: "5px" }} />
                               add
                             </Button>
@@ -620,15 +656,36 @@ function DashboardContentUser() {
                                       paddingBottom: "50px",
                                     }}
                                   >
-                                    {playlist.map((userPlaylist, index) => (
-                                      <Paper key={index}>
-                                        <p>
-                                          <strong>Playlist Title:</strong>{" "}
-                                          {userPlaylist.playlistTitle}
-                                        </p>
-                                      </Paper>
-                                    ))}
-                                   
+                                    <Paper>
+                                      <React.Fragment>
+                                        {playlist.map((userPlaylist, idnx) => (
+                                          <Stack
+                                            key={idnx}
+                                            direction="row"
+                                            spacing={1}
+                                            style={{
+                                              textAlign: "center",
+                                              margin: "10px",
+                                            }}
+                                          >
+                                            <Button
+                                              key={index}
+                                              onClick={() =>
+                                                addSongToPlaylist(
+                                                  userPlaylist.playlistTitle,
+                                                  result.songID
+                                                )
+                                              }
+                                            >
+                                              <p>
+                                                <strong>Playlist Title:</strong>{" "}
+                                                {userPlaylist.playlistTitle}
+                                              </p>
+                                            </Button>
+                                          </Stack>
+                                        ))}
+                                      </React.Fragment>
+                                    </Paper>
                                   </Stack>
                                 </Box>
                               </Fade>

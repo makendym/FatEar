@@ -27,7 +27,7 @@ import Fade from "@mui/material/Fade";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-
+import ShowSongs from './showSongs'
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -105,6 +105,10 @@ const Playlist = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+  const goToSongs = (title) => {
+    navigate(`/playlistsongs/${title}`);
+  };
+
   const goToProfile = () => {
     navigate(`/userprofile`);
   };
@@ -387,11 +391,16 @@ const Playlist = () => {
                 </Modal>
                 {userPlaylist.map((userPlaylist, index) => (
                   <Paper key={index}>
-                    <p>
-                      <strong>Playlist Title:</strong>{" "}
-                      {userPlaylist.playlistTitle}
-                    </p>
+                    <Button
+                      onClick={() => goToSongs(userPlaylist.playlistTitle)}
+                    >
+                      <p>
+                        <strong>Playlist Title:</strong>{" "}
+                        {userPlaylist.playlistTitle}
+                      </p>
+                    </Button>
                   </Paper>
+                  
                 ))}
               </Stack>
             </Stack>

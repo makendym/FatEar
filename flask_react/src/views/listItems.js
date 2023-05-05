@@ -8,13 +8,11 @@ import PeopleIcon from "@mui/icons-material/People";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ForumIcon from "@mui/icons-material/Forum";
-import IconButton from "@mui/material/IconButton";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import Divider from "@mui/material/Divider";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
 import axios from "axios";
+import Badge from "@mui/material/Badge";
 
 const MainListItems = () => {
   const navigate = useNavigate();
@@ -72,7 +70,9 @@ const MainListItems = () => {
       </ListItemButton>
       <ListItemButton onClick={goToPosts}>
         <ListItemIcon>
-          <ForumIcon />
+          <Badge badgeContent={4} color="secondary">
+            <ForumIcon />
+          </Badge>
         </ListItemIcon>
         <ListItemText primary="Posts" />
       </ListItemButton>
@@ -84,19 +84,25 @@ const MainListItems = () => {
       </ListItemButton>
       <ListItemButton onClick={goToFollows}>
         <ListItemIcon>
-          <PeopleIcon />
+          <Badge badgeContent={10} color="secondary">
+            <PeopleIcon />
+          </Badge>
         </ListItemIcon>
         <ListItemText primary="Follows" />
       </ListItemButton>
       <ListItemButton onClick={goToFrieds}>
         <ListItemIcon>
-          <BarChartIcon />
+          <Badge badgeContent={7} color="secondary">
+            <BarChartIcon />
+          </Badge>
         </ListItemIcon>
         <ListItemText primary="Friends" />
       </ListItemButton>
       <ListItemButton onClick={goToFriendRequest}>
         <ListItemIcon>
-          <PersonAddIcon />
+          <Badge badgeContent={9} color="secondary">
+            <PersonAddIcon />
+          </Badge>
         </ListItemIcon>
         <ListItemText primary="Friend Request" />
       </ListItemButton>
