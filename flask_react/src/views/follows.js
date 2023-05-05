@@ -196,7 +196,7 @@ const Follows = () => {
   };
 
   useEffect(() => {
-    const fetchPlaylist = async () => {
+    const fetchFollowers = async () => {
       try {
         const response = await axios.get("/followers");
         setUserFollowers(response.data[1]);
@@ -205,11 +205,11 @@ const Follows = () => {
         console.error(error);
       }
     };
-    fetchPlaylist();
+    fetchFollowers();
   }, []);
 
   useEffect(() => {
-    const fetchPlaylist = async () => {
+    const fetchFollowing = async () => {
       try {
         const response = await axios.get("/following");
         setUserFollowing(response.data[1]);
@@ -218,7 +218,7 @@ const Follows = () => {
         console.error(error);
       }
     };
-    fetchPlaylist();
+    fetchFollowing();
   }, []);
   const theme = useTheme();
   const [value, setValue] = React.useState(0);
