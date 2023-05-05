@@ -124,31 +124,31 @@ def loginAuths():
         return jsonify({"error": error})
 
 
-@api.route('/registerAuth', methods=['POST'])
-def registerAuth():
-    # Grabs information from the form data
-    username = request.form['username']
-    password = request.form['password']
+# @api.route('/registerAuth', methods=['POST'])
+# def registerAuth():
+#     # Grabs information from the form data
+#     username = request.form['username']
+#     password = request.form['password']
 
-    # Cursor used to send queries
-    cursor = conn.cursor()
+#     # Cursor used to send queries
+#     cursor = conn.cursor()
 
-    # Executes query to check if the user exists
-    query = 'SELECT * FROM user WHERE username = %s'
-    cursor.execute(query, (username,))
-    data = cursor.fetchone()
+#     # Executes query to check if the user exists
+#     query = 'SELECT * FROM user WHERE username = %s'
+#     cursor.execute(query, (username,))
+#     data = cursor.fetchone()
 
-    # If the previous query returns data, then user exists
-    if data:
-        error = "This username already exists"
-        return jsonify({"error": error})
-    else:
-        # Inserts new user data into the database
-        ins = 'INSERT INTO user VALUES(%s, %s)'
-        cursor.execute(ins, (username, password))
-        conn.commit()
-        cursor.close()
-        return jsonify({"success": "User registered successfully"})
+#     # If the previous query returns data, then user exists
+#     if data:
+#         error = "This user already exists"
+#         return jsonify({"error": error})
+#     else:
+#         # Inserts new user data into the database
+#         ins = 'INSERT INTO user VALUES(%s, %s)'
+#         cursor.execute(ins, (username, password))
+#         conn.commit()
+#         cursor.close()
+#         return jsonify({"success": "User registered successfully"})
 
 
 
