@@ -66,9 +66,9 @@ function Register() {
           pwd: res.pwd,
           fname: res.fname,
           lname: res.lname,
-          nickname: res.nickname
+          nickname: res.nickname,
         });
-        if (response.status === 200) {
+        if (res.success) {
           setSuccess(res.success);
           console.log(success);
           console.log(profileData);
@@ -88,35 +88,6 @@ function Register() {
   };
 
   return (
-    // <div>
-    //   <form onSubmit={handleSubmit}>
-    //     <input
-    //       type="text"
-    //       name="username"
-    //       placeholder="username"
-    //       value={username}
-    //       onChange={(event) => setUsername(event.target.value)}
-    //       required
-    //     />
-    //     <br />
-    //     <input
-    //       type="password"
-    //       name="password"
-    //       placeholder="password"
-    //       value={password}
-    //       onChange={(event) => setPassword(event.target.value)}
-    //       required
-    //     />
-    //     <br />
-    //     <input type="submit" value="Register" />
-    //     {error && (
-    //       <p className="error">
-    //         <strong>Error:</strong> {error}
-    //       </p>
-    //     )}
-    //   </form>
-    //   <a href="/">Go back</a>
-    // </div>
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
@@ -212,6 +183,11 @@ function Register() {
             {error && (
               <p className="error">
                 <strong>Error:</strong> {error}
+              </p>
+            )}
+            {success && (
+              <p className="success">
+                <strong>Success:</strong> {success}
               </p>
             )}
             <Grid container justifyContent="flex-end">
