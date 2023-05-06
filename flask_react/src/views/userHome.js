@@ -57,7 +57,7 @@ function Copyright(props) {
 }
 
 const drawerWidth = 240;
-
+let friendReqCount1 = 0;
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
@@ -103,7 +103,15 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 const mdTheme = createTheme();
-
+const myObj = {
+  _friendReqCount: 0,
+  set friendReqCount(value) {
+    this._friendReqCount = value;
+  },
+  get friendReqCount() {
+    return this._friendReqCount;
+  }
+};
 function DashboardContentUser() {
   const [open, setOpen] = React.useState(true);
   const [username, setUsername] = useState("");
@@ -150,8 +158,6 @@ function DashboardContentUser() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const formData = new FormData(event.target);
-
     axios
       .get("/search", {
         params: {
@@ -173,6 +179,42 @@ function DashboardContentUser() {
         }
       });
   };
+  const [rateValue, setRateValue] = React.useState(2);
+  const handleRating = (event, songId, stars) => {
+    event.preventDefault();
+    axios
+      .post('/post-rating', {
+        songId: songId,
+        stars: stars
+      })
+      .then((response) => {
+        setResult(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  };
+
+  useEffect(() => {
+  const fetchPendingStatus = async () => {
+    
+    try{
+      const response = await axios.get("/pending");
+      friendReqCount1 = response.data[1].length;
+      myObj.friendReqCount = response.data[1].length;
+        console.log(response.data[1]);
+    }catch(error){
+        console.log(error);
+      }
+  };
+  
+   fetchPendingStatus();
+  }, []);
 
   const handleGenreChange = (event) => {
     setGenre(event.target.value);
@@ -202,7 +244,7 @@ function DashboardContentUser() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [rateValue, setRateValue] = React.useState(2);
+  
 
 
   const [open2, setOpen2] = React.useState(false);
@@ -557,9 +599,7 @@ function DashboardContentUser() {
                                 key={index}
                                 name="simple-controlled"
                                 value={result.stars}
-                                onChange={(event, newValue) => {
-                                  setRateValue(newValue);
-                                }}
+                                onChange={(event, value) => handleRating(event, result.songID, value)}
                               />
                             </Box>
 
@@ -710,7 +750,7 @@ function DashboardContentUser() {
     </ThemeProvider>
   );
 }
-
+export { friendReqCount1,myObj};
 export default function Dashboard() {
   return <DashboardContentUser />;
 }

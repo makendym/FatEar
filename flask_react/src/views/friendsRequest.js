@@ -30,6 +30,7 @@ import Menu from "@mui/material/Menu";
 
 import { useNavigate } from "react-router-dom";
 
+
 function Copyright(props) {
   return (
     <Typography
@@ -95,7 +96,16 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 const mdTheme = createTheme();
-
+let friendReqCount = 0;
+const myObj = {
+  _friendReqCount: 0,
+  set friendReqCount(value) {
+    this._friendReqCount = value;
+  },
+  get friendReqCount() {
+    return this._friendReqCount;
+  }
+};
 const Follows = () => {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
@@ -202,12 +212,15 @@ const Follows = () => {
     navigate(`/`);
   };
 
-
+ 
 
   const fetchPendingStatus = async () => {
+    
     try{
       const response = await axios.get("/pending");
       setUserInfo(response.data[1]);
+      friendReqCount = response.data[1].length;
+      myObj.friendReqCount = response.data[1].length;
         console.log(response.data[1]);
     }catch(error){
         console.log(error);
@@ -433,4 +446,6 @@ const Follows = () => {
     </ThemeProvider>
   );
 };
+export { friendReqCount, myObj};
 export default Follows;
+

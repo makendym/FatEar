@@ -11,9 +11,8 @@ from werkzeug.utils import secure_filename
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 
-# Initialize the app from Flask
-# app = Flask(__name__)
-# app.secret_key = "secret key"
+api = Flask(__name__)
+api.secret_key = "secret key"
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
@@ -24,8 +23,7 @@ conn = pymysql.connect(host='localhost',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
-api = Flask(__name__)
-api.secret_key = "secret key"
+
 
 if __name__ == '__main__':
     api.run(debug=TRUE)
@@ -42,34 +40,6 @@ def register():
     return render_template('register.html')
 
 
-# # Authenticates the login
-# @api.route('/loginAuth', methods=['GET', 'POST'])
-# def loginAuth():
-#     # grabs information from the forms
-#     username = request.form('username')
-#     password = request.form('password')
-
-#     # cursor used to send queries
-#     cursor = conn.cursor()
-#     # executes query
-#     query = 'SELECT * FROM user WHERE username = %s and password = %s'
-#     cursor.execute(query, (username, password))
-#     # stores the results in a variable
-#     data = cursor.fetchone()
-#     # use fetchall() if you are expecting more than 1 data row
-#     cursor.close()
-#     error = None
-#     if (data):
-#         # creates a session for the the user
-#         # session is a built in
-#         session['username'] = username
-#         return jsonify({"success": "User registered successfully"})
-#     else:
-#         # returns an error message to the html page
-#         error = 'Invalid login or username'
-#         return jsonify({"error": error})
-
-# Authenticates the register
 
 
 # Authenticates the login
@@ -125,34 +95,6 @@ def loginAuths():
     else:
         error = 'Invalid username or password.'
         return jsonify({"error": error})
-
-
-# @api.route('/registerAuth', methods=['POST'])
-# def registerAuth():
-#     # Grabs information from the form data
-#     username = request.form['username']
-#     password = request.form['password']
-
-#     # Cursor used to send queries
-#     cursor = conn.cursor()
-
-#     # Executes query to check if the user exists
-#     query = 'SELECT * FROM user WHERE username = %s'
-#     cursor.execute(query, (username,))
-#     data = cursor.fetchone()
-
-#     # If the previous query returns data, then user exists
-#     if data:
-#         error = "This user already exists"
-#         return jsonify({"error": error})
-#     else:
-#         # Inserts new user data into the database
-#         ins = 'INSERT INTO user VALUES(%s, %s)'
-#         cursor.execute(ins, (username, password))
-#         conn.commit()
-#         cursor.close()
-#         return jsonify({"success": "User registered successfully"})
-
 
 
 @api.route('/registerAuths', methods=['POST'])
@@ -462,32 +404,28 @@ def postRating():
     cursor = conn.cursor()
 
     # Check if the user has already rated the song
-    query = "SELECT * FROM rateSong WHERE username = %s AND songId = %s"
+    query = "SELECT * FROM rateSong WHERE username = %s AND songID = %s"
     cursor.execute(query, (user, songId))
     data = cursor.fetchone()
 
     # If the user has already rated the song, ask if they want to change their rating
     if data:
-        change_rating = input("You have already rated this song. Do you want to change your rating? (y/n)")
-        if change_rating.lower() == "y":
-            # Check if stars value is valid (between 1 and 5)
-            if 1 <= stars <= 5:
-                query = "UPDATE rateSong SET rating = %s, date = %s WHERE username = %s AND songId = %s"
-                cursor.execute(query, (stars, date.today(), user, songId))
-                conn.commit()
-                cursor.close()
-                return jsonify({"success": "Your rating has been updated."})
-            else:
-                cursor.close()
-                return jsonify({"error": "Invalid rating value. Enter a rating value between 1 and 5."})
+        # Check if stars value is valid (between 1 and 5)
+        if 1 <= stars <= 5:
+            query = "UPDATE rateSong SET stars = %s, ratingDate = %s WHERE username = %s AND songID = %s"
+            cursor.execute(query, (stars, date.today(), user, songId))
+            conn.commit()
+            cursor.close()
+            return jsonify({"success": "Your rating has been updated."})
         else:
-            return jsonify({"message": "Your rating was not changed."})
+            cursor.close()
+            return jsonify({"error": "Invalid rating value. Enter a rating value between 1 and 5."})
 
     # If the user has not rated the song, insert a new rating
     else:
         # Check if stars value is valid (between 1 and 5)
         if 1 <= stars <= 5:
-            query = "INSERT INTO rateSong (username, songId, rating, date) VALUES (%s, %s, %s, %s)"
+            query = "INSERT INTO rateSong (username, songID, stars, ratingDate) VALUES (%s, %s, %s, %s)"
             cursor.execute(query, (user, songId, stars, date.today()))
             conn.commit()
             cursor.close()
@@ -495,7 +433,6 @@ def postRating():
         else:
             cursor.close()
             return jsonify({"error": "Invalid rating value. Enter ratings between 1 and 5."})
-
 
 
 #THIS IS FOR ALBUM REVIEW
