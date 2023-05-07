@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { IconButton, Menu, MenuItem, Stack } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Typography from "@mui/material/Typography";
-import Divider from '@mui/material/Divider';
+import Divider from "@mui/material/Divider";
+import Badge from "@mui/material/Badge";
 function RecentUpdates() {
   const [newSongs, setNewSongs] = useState([]);
   const [newFriendRequests, setNewFriendRequests] = useState([]);
@@ -41,7 +42,9 @@ function RecentUpdates() {
         color="inherit"
         onClick={handleMenu}
       >
-        <NotificationsIcon />
+        <Badge badgeContent={newSongs.length + newFriendRequests.length} color="secondary">
+          <NotificationsIcon />
+        </Badge>
       </IconButton>
       <Menu
         id="menu-appbar"
