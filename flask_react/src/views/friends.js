@@ -27,7 +27,7 @@ import Fade from "@mui/material/Fade";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-
+import SearchUsers from "./searchUsers";
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -170,6 +170,9 @@ const Follows = () => {
     };
     fetchPlaylist();
   }, []);
+
+
+
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -315,6 +318,8 @@ const Follows = () => {
                 <Typography variant="h3" gutterBottom>
                   Friends
                 </Typography>
+
+                <SearchUsers/>
                 <Paper style={{ width: "700px" }}>
                   {userInfo?.length > 0 ? (
                     <>

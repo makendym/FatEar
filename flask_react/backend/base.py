@@ -24,10 +24,8 @@ conn = pymysql.connect(host='localhost',
                        cursorclass=pymysql.cursors.DictCursor)
 
 
-
 if __name__ == '__main__':
     api.run(debug=TRUE)
-
 
 
 @api.route('/')
@@ -38,8 +36,6 @@ def hello():
 @api.route('/register')
 def register():
     return render_template('register.html')
-
-
 
 
 # Authenticates the login
@@ -66,9 +62,8 @@ def loginAuth():
         error = 'Invalid username or password.'
         return jsonify({"error": error})
 
+
 @api.route('/loginAuths', methods=['GET', 'POST'])
-
-
 def loginAuths():
     # Grab information from the form
     username = request.form.get('username')
@@ -79,13 +74,12 @@ def loginAuths():
     query = 'SELECT * FROM user WHERE username = %s AND pwd = %s'
     cursor.execute(query, (username, pwd))
     data = cursor.fetchone()
-    
 
     # If the username and password are valid, store the username in the session
     if data:
         # Set lastLogin to today's date
         query = 'UPDATE user SET lastLogin = %s WHERE username = %s'
-        cursor.execute(query,(date.today(), username,))
+        cursor.execute(query, (date.today(), username,))
         conn.commit()
         cursor.close()
         session['username'] = username
@@ -141,20 +135,20 @@ def registerAuths():
             error = "Nickname cannot exceed 20 characters."
             return jsonify({"error": error})
 
-        cursor.execute(ins, (username, pwd, fname, lname, date.today(), nickname))
+        cursor.execute(ins, (username, pwd, fname,
+                       lname, date.today(), nickname))
         conn.commit()
         cursor.close()
         return jsonify({"success": "User registered successfully"})
-
-
 
 
 @api.route('/home')
 def home():
     user = session.get('username')
     if user is None:
-        return "User is not logged in", 401 
+        return "User is not logged in", 401
     return jsonify(username=user)
+
 
 @api.route('/logout')
 def logout():
@@ -180,17 +174,22 @@ def search():
                 WHERE songGenre.genre = %s AND artist.fname = %s"
         cursor.execute(query, (genre, search))
     elif genre:
-        query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre, rateSong.stars  \
-                FROM song \
-                JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID \
-                JOIN artist ON artist.artistID = artistPerformsSong.artistID \
-                JOIN songInAlbum ON songInAlbum.songID = song.songID \
-                JOIN album ON album.albumID = songInAlbum.albumID \
-                JOIN songGenre ON songGenre.songID = song.songID \
-                JOIN rateSong ON rateSong.songID = song.songID \
-                WHERE songGenre.genre = %s"
+        cursor.execute("SET sql_mode=''")
+        query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre, MAX(rateSong.stars) AS stars \
+             FROM song \
+             JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID \
+             JOIN artist ON artist.artistID = artistPerformsSong.artistID \
+             JOIN songInAlbum ON songInAlbum.songID = song.songID \
+             JOIN album ON album.albumID = songInAlbum.albumID \
+             JOIN songGenre ON songGenre.songID = song.songID \
+             JOIN (SELECT songID, MAX(ratingDate) AS maxDate FROM rateSong GROUP BY songID) AS latestRatings \
+             ON latestRatings.songID = song.songID \
+             JOIN rateSong ON rateSong.songID = song.songID AND rateSong.ratingDate = latestRatings.maxDate \
+             WHERE songGenre.genre = %s \
+             GROUP BY song.songID"
         cursor.execute(query, (genre,))
-    
+
+
     elif search:
         query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, rateSong.stars\
                 FROM song JOIN artistPerformsSong ON song.songID  = artistPerformsSong.songID \
@@ -211,11 +210,21 @@ def search():
                 HAVING stars  >= %s"
         cursor.execute(query, (rating,))
     else:
-        query = "SELECT * FROM song"
+        cursor.execute("SET sql_mode=''")
+        query = "SELECT DISTINCT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, GROUP_CONCAT(songGenre.genre) AS genres, MAX(rateSong.stars) AS stars\
+                FROM song\
+                JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID\
+                JOIN artist ON artist.artistID = artistPerformsSong.artistID\
+                JOIN songInAlbum ON songInAlbum.songID = song.songID\
+                JOIN album ON album.albumID = songInAlbum.albumID\
+                JOIN songGenre ON songGenre.songID = song.songID\
+                LEFT JOIN rateSong ON rateSong.songID = song.songID\
+                GROUP BY song.songID, song.title, artist.fname, artist.lname, album.albumTitle"
         cursor.execute(query)
     data = cursor.fetchall()
     cursor.close()
     return jsonify(data)
+
 
 @api.route('/genre', methods=['GET'])
 def genre():
@@ -246,7 +255,7 @@ def createPlaylist():
         cursor.execute(query, (playlisttitle, user, date.today()))
     else:
         return jsonify({"error": True, "message": "Missing playlist title"})
-    
+
     conn.commit()
     cursor.close()
     return jsonify({"success": True})
@@ -257,19 +266,20 @@ def listPlaylist():
     user = session['username']
     cursor = conn.cursor()
     query = 'SELECT playlistTitle FROM playlist WHERE playlist.username = %s'
-    cursor.execute(query,(user))
+    cursor.execute(query, (user))
     data = cursor.fetchall()
     cursor.close()
-    return jsonify({"success":True},data)
+    return jsonify({"success": True}, data)
+
 
 @api.route('/userprofile')
 def userProfile():
     user = session['username']
     cursor = conn.cursor()
-    query ='SELECT user.username, user.fname, user.lname, user.nickname\
+    query = 'SELECT user.username, user.fname, user.lname, user.nickname\
             FROM user\
             WHERE user.username = %s'
-    cursor.execute(query,(user))
+    cursor.execute(query, (user))
     data = cursor.fetchall()
 
     query_artists = 'SELECT artist.fname, artist.lname\
@@ -278,47 +288,50 @@ def userProfile():
     cursor.execute(query_artists, (user,))
     artist_data = cursor.fetchall()
     cursor.close()
-    return jsonify({"success":True, "user_data": data, "artist_data": artist_data})
+    return jsonify({"success": True, "user_data": data, "artist_data": artist_data})
+
 
 @api.route('/followers')
 def followers():
     user = session['username']
     cursor = conn.cursor()
-    query ='SELECT u.fName, u.lName, u.username\
+    query = 'SELECT u.fName, u.lName, u.username\
             FROM user u JOIN follows f ON u.username = f.follower\
             WHERE f.follows = %s'
-    cursor.execute(query,(user))
+    cursor.execute(query, (user))
     data = cursor.fetchall()
     cursor.close()
-    return jsonify({"success":True},data)
+    return jsonify({"success": True}, data)
+
 
 @api.route('/following')
 def following():
     user = session['username']
     cursor = conn.cursor()
-    query ='SELECT u.fName, u.lName, u.username\
+    query = 'SELECT u.fName, u.lName, u.username\
             FROM user u JOIN follows f ON u.username = f.follows\
-            WHERE f.follower = %s'     
-    cursor.execute(query,(user))
+            WHERE f.follower = %s'
+    cursor.execute(query, (user))
     data = cursor.fetchall()
     cursor.close()
-    return jsonify({"success":True},data)
+    return jsonify({"success": True}, data)
+
 
 @api.route('/friends')
 def friends():
     user = session['username']
     cursor = conn.cursor()
-    query ='SELECT  f1.user2, u2.fname, u2.lname\
+    query = 'SELECT  f1.user2, u2.fname, u2.lname\
             FROM friend f1 INNER JOIN user u1 ON u1.username = f1.user1 INNER JOIN user u2 ON u2.username = f1.user2\
             WHERE f1.user1 = %s AND f1.acceptStatus = "Accepted"\
             UNION\
             SELECT  f1.user1, u1.fname, u1.lname\
             FROM friend f1 INNER JOIN user u1 ON u1.username = f1.user1 INNER JOIN user u2 ON u2.username = f1.user2\
             WHERE f1.user2 = %s AND f1.acceptStatus = "Accepted"'
-    cursor.execute(query,(user,user))
+    cursor.execute(query, (user, user))
     data = cursor.fetchall()
     cursor.close()
-    return jsonify({"success":True},data)
+    return jsonify({"success": True}, data)
 
 
 @api.route('/pending')
@@ -328,10 +341,11 @@ def pending():
     query = 'SELECT u.fName, u.lName, u.username\
     FROM user u JOIN friend f ON u.username = f.user1\
     WHERE f.user2 = %s AND f.acceptStatus = "Pending"'
-    cursor.execute(query,(user,))
+    cursor.execute(query, (user,))
     data = cursor.fetchall()
     cursor.close()
-    return jsonify({"success":True},data)
+    return jsonify({"success": True}, data)
+
 
 @api.route('/accept', methods=['POST'])
 def accept():
@@ -345,7 +359,6 @@ def accept():
     return jsonify({"success": True},)
 
 
-    
 @api.route('/reject', methods=['POST'])
 def reject():
     user = session['username']
@@ -357,15 +370,16 @@ def reject():
     cursor.close()
     return jsonify({"success": True})
 
+
 @api.route('/post-review', methods=['POST'])
 def postReview():
     user = session.get('username')
-    songId = request.json.get('songId')
+    songId = request.json.get('songID')
     review = request.json.get('review')
     cursor = conn.cursor()
 
     # Check if user has already reviewed the song
-    query = "SELECT * FROM reviewSong WHERE username = %s AND songId = %s"
+    query = "SELECT * FROM reviewSong WHERE username = %s AND songID = %s"
     cursor.execute(query, (user, songId))
     existing_review = cursor.fetchone()
 
@@ -375,7 +389,7 @@ def postReview():
             cursor.close()
             return jsonify({"error": True, "message": "Review exceeds character limits"})
         else:
-            query = "UPDATE reviewSong SET review = %s, date = %s WHERE username = %s AND songId = %s"
+            query = "UPDATE reviewSong SET reviewText = %s, reviewDate = %s WHERE username = %s AND songID = %s"
             cursor.execute(query, (review, date.today(), user, songId))
             conn.commit()
             cursor.close()
@@ -393,8 +407,6 @@ def postReview():
             cursor.close()
             return jsonify({"success": True})
 
-    
-
 
 @api.route('/post-rating', methods=['POST'])
 def postRating():
@@ -411,7 +423,7 @@ def postRating():
     # If the user has already rated the song, ask if they want to change their rating
     if data:
         # Check if stars value is valid (between 1 and 5)
-        if 1 <= stars <= 5:
+        if stars is not None and 1 <= stars <= 5:
             query = "UPDATE rateSong SET stars = %s, ratingDate = %s WHERE username = %s AND songID = %s"
             cursor.execute(query, (stars, date.today(), user, songId))
             conn.commit()
@@ -424,18 +436,22 @@ def postRating():
     # If the user has not rated the song, insert a new rating
     else:
         # Check if stars value is valid (between 1 and 5)
-        if 1 <= stars <= 5:
-            query = "INSERT INTO rateSong (username, songID, stars, ratingDate) VALUES (%s, %s, %s, %s)"
-            cursor.execute(query, (user, songId, stars, date.today()))
+        if stars is not None and 1 <= stars <= 5:
+            query = "INSERT INTO rateSong (username, songID, stars, ratingDate) SELECT %s, %s, %s, %s WHERE NOT EXISTS (SELECT 1 FROM rateSong WHERE username = %s AND songID = %s)"
+            cursor.execute(query, (user, songId, stars,
+                           date.today(), user, songId))
             conn.commit()
-            cursor.close()
-            return jsonify({"success": "Your rating has been added."})
+            if cursor.rowcount == 0:
+                return jsonify({"error": "You have already rated this song."})
+            else:
+                cursor.close()
+                return jsonify({"success": "Your rating has been added."})
         else:
             cursor.close()
             return jsonify({"error": "Invalid rating value. Enter ratings between 1 and 5."})
 
 
-#THIS IS FOR ALBUM REVIEW
+# THIS IS FOR ALBUM REVIEW
 @api.route('/post-album-review', methods=['POST'])
 def postAlbumReview():
     user = session['username']
@@ -453,11 +469,11 @@ def postAlbumReview():
         if len(review) > 100:
             return jsonify({"error": True, "message": "Review exceeds character limit"})
         else:
-                query = "UPDATE reviewAlbum SET review = %s, date = %s WHERE username = %s AND albumId = %s"
-                cursor.execute(query, (review, date.today(), user, albumId))
-                conn.commit()
-                cursor.close()
-                return jsonify({"success": True, "message": "Review updated successfully"})
+            query = "UPDATE reviewAlbum SET review = %s, date = %s WHERE username = %s AND albumId = %s"
+            cursor.execute(query, (review, date.today(), user, albumId))
+            conn.commit()
+            cursor.close()
+            return jsonify({"success": True, "message": "Review updated successfully"})
     # If user has not reviewed the album, insert a new review
     else:
         # Check review character count
@@ -469,10 +485,9 @@ def postAlbumReview():
             conn.commit()
             cursor.close()
             return jsonify({"success": True})
-    
-    
 
-#THIS IS FOR ALBUM RARING
+
+# THIS IS FOR ALBUM RARING
 @api.route('/post-album-rating', methods=['POST'])
 def postAlbumRating():
     user = session['username']
@@ -511,7 +526,6 @@ def postAlbumRating():
             return jsonify({"error": "Invalid rating value. Enter a rating between 1 and 5."})
 
 
-
 @api.route('/addtoplaylist', methods=['POST'])
 def add_to_playlist():
     user = session['username']
@@ -530,7 +544,6 @@ def add_to_playlist():
         conn.commit()
         cursor.close()
         return "Song added to playlist successfully"
-
 
 
 @api.route('/show-playlist-songs')
@@ -611,3 +624,87 @@ def showPost():
     data = cursor.fetchall()
     cursor.close()
     return jsonify(data)
+
+@api.route('/search-users')
+def search_users():
+    user = session.get('username')
+    search_query = request.args.get('q')
+    if not search_query:
+        return jsonify([])
+    
+    cursor = conn.cursor()
+    query = "SELECT user.fname, user.lname, user.username FROM user WHERE user.fName LIKE %s OR user.lname LIKE %s"
+    search_term = "%" + search_query + "%"
+    cursor.execute(query, (search_term, search_term))
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify(data)
+
+@api.route('/add-friend', methods=['POST'])
+def addFriend():
+    user = session.get('username')
+    requestedUser = request.json.get('requestedUser')
+    cursor = conn.cursor()
+    try:
+        # Check if friend request already exists
+        query = "SELECT * FROM friend WHERE user1=%s AND user2=%s AND acceptStatus='pending'"
+        cursor.execute(query, (user, requestedUser))
+        existing_request = cursor.fetchone()
+        if existing_request:
+            return jsonify({"error": "Friend request already sent"})
+        # Check if the users are already friends
+        query = "SELECT * FROM friend WHERE user1=%s AND user2=%s AND acceptStatus='accepted'"
+        cursor.execute(query, (user, requestedUser))
+        existing_friendship = cursor.fetchone()
+        if existing_friendship:
+            return jsonify({"error": "You are already friends"})
+        # Insert the new friend request
+        query = "INSERT INTO friend VALUES (%s, %s, 'pending', %s, %s, %s)"
+        cursor.execute(query, (user, requestedUser, user, date.today(), date.today()))
+        conn.commit()
+        cursor.close()
+        return jsonify({'message': 'Friend request sent successfully'})
+    except Exception as e:
+        conn.rollback()
+        cursor.close()
+        return jsonify({'error': 'An error occurred while processing your request'})
+
+
+@api.route('/get-notified', methods=['POST'])
+def getNotified():
+    # get the username from the request body
+    user = session.get('username')
+
+    # Query to get new songs by artists the user is a fan of
+    new_songs_query = '''
+        SELECT artist.fname, artist.lname, song.title
+        FROM userFanOfArtist JOIN artist ON userFanOfArtist.artistID = artist.artistID
+        JOIN artistPerformsSong ON artist.artistID = artistPerformsSong.artistID
+        JOIN song ON artistPerformsSong.songID = song.songID
+        JOIN user ON userFanOfArtist.username = user.username
+        WHERE userFanOfArtist.username = %s AND song.releaseDate >= user.lastlogin
+    '''
+
+    # Query to get new friend requests
+    new_friend_requests_query = '''
+        SELECT u1.username, u1.fname, u1.lname
+        FROM user u1 JOIN friend f ON u1.username = f.user1
+        JOIN user u2 ON f.user2 = u2.username
+        WHERE f.user2 = %s AND f.acceptStatus = 'Pending' AND f.createdAt >= u2.lastlogin
+    '''
+
+    # execute the queries and retrieve the results
+    with conn.cursor() as cursor:
+        cursor.execute(new_songs_query, (user,))
+        new_songs = cursor.fetchall()
+
+        cursor.execute(new_friend_requests_query, (user,))
+        new_friend_requests = cursor.fetchall()
+
+    # construct and return the response
+    response = {
+        'new_songs': new_songs,
+        'new_friend_requests': new_friend_requests
+    }
+
+    return jsonify(response)

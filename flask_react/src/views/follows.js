@@ -143,19 +143,7 @@ const Follows = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get("/home");
-        setUsername(response.data.username);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
-      }
-    };
-    fetchPosts();
-  }, []);
+ 
 
   const handleLogout = async () => {
     try {
@@ -205,10 +193,6 @@ const Follows = () => {
         console.error(error);
       }
     };
-    fetchFollowers();
-  }, []);
-
-  useEffect(() => {
     const fetchFollowing = async () => {
       try {
         const response = await axios.get("/following");
@@ -218,8 +202,21 @@ const Follows = () => {
         console.error(error);
       }
     };
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get("/home");
+        setUsername(response.data.username);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+    fetchPosts();
     fetchFollowing();
+    fetchFollowers();
   }, []);
+
   const theme = useTheme();
   const [value, setValue] = React.useState(0);
 
