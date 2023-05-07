@@ -31,6 +31,7 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import PropTypes from "prop-types";
 import { useTheme } from "@mui/material/styles";
+import RecentUpdates from "./recentUpdates";
 
 import { useNavigate } from "react-router-dom";
 
@@ -277,16 +278,8 @@ const Follows = () => {
                   spacing={2}
                   sx={{ justifyContent: "flex-end" }}
                 >
-                  <Typography
-                    component="h5"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
-                  >
-                    {username}
-                  </Typography>
+                  <RecentUpdates />
+
                   <IconButton
                     size="large"
                     aria-label="account of current user"
@@ -316,7 +309,16 @@ const Follows = () => {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="contained" onClick={handleLogout}>
+              <Button
+                variant="contained"
+                size="medium"
+                style={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+                  fontSize: "13px",
+                }}
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </Stack>

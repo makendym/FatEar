@@ -21,6 +21,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import MainListItems from "./listItems";
+import RecentUpdates from "./recentUpdates";
 
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
@@ -205,16 +206,8 @@ const Post = () => {
                   spacing={2}
                   sx={{ justifyContent: "flex-end" }}
                 >
-                  <Typography
-                    component="h5"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
-                  >
-                    {username}
-                  </Typography>
+                  <RecentUpdates />
+
                   <IconButton
                     size="large"
                     aria-label="account of current user"
@@ -244,7 +237,16 @@ const Post = () => {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="contained" onClick={handleLogout}>
+              <Button
+                variant="contained"
+                size="medium"
+                style={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+                  fontSize: "13px",
+                }}
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </Stack>
@@ -267,7 +269,6 @@ const Post = () => {
           <List component="nav">
             <MainListItems />
             <Divider sx={{ my: 1 }} />
-            {/* {secondaryListItems} */}
           </List>
         </Drawer>
         <Box
@@ -284,12 +285,12 @@ const Post = () => {
         >
           <Toolbar />
           <Container
-             maxWidth="sm"
-             sx={{
-               display: "flex",
-               justifyContent: "center",
-               marginTop: "60px",
-             }}
+            maxWidth="sm"
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "60px",
+            }}
           >
             <Stack direction="column" spacing={2}>
               <Stack
@@ -337,7 +338,6 @@ const Post = () => {
                                 </p>
                               </div>
                             </Container>
-                         
                           </Stack>
                           <Divider sx={{ my: 1 }} />
                         </>

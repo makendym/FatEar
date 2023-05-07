@@ -27,7 +27,9 @@ import Fade from "@mui/material/Fade";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-import ShowSongs from './showSongs'
+import RecentUpdates from "./recentUpdates";
+
+import ShowSongs from "./showSongs";
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -249,16 +251,8 @@ const Playlist = () => {
                   spacing={2}
                   sx={{ justifyContent: "flex-end" }}
                 >
-                  <Typography
-                    component="h5"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
-                  >
-                    {username}
-                  </Typography>
+                  <RecentUpdates />
+
                   <IconButton
                     size="large"
                     aria-label="account of current user"
@@ -288,7 +282,16 @@ const Playlist = () => {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="contained" onClick={handleLogout}>
+              <Button
+                variant="contained"
+                size="medium"
+                style={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+                  fontSize: "13px",
+                }}
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </Stack>
@@ -400,7 +403,6 @@ const Playlist = () => {
                       </p>
                     </Button>
                   </Paper>
-                  
                 ))}
               </Stack>
             </Stack>

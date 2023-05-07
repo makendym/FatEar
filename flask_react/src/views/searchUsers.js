@@ -56,7 +56,7 @@ export default function SearchUsers() {
   return (
     <Container
       maxWidth="sm"
-      sx={{
+      style={{
         display: "flex",
         justifyContent: "center",
         marginTop: "60px",
@@ -73,7 +73,7 @@ export default function SearchUsers() {
           color="primary"
           label="Search for users"
           placeholder="Search for users..."
-          style={{ width: "30vw" }}
+          style={{ width: "40vw",  }}
           value={searchInput}
           onChange={handleSearchInputChange}
           onKeyPress={(event) => {

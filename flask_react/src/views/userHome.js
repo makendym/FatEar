@@ -432,7 +432,6 @@ function DashboardContentUser() {
           <List component="nav">
             <MainListItems />
             <Divider sx={{ my: 1 }} />
-            {/* {secondaryListItems} */}
           </List>
         </Drawer>
         <Box

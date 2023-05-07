@@ -27,9 +27,9 @@ import Fade from "@mui/material/Fade";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
+import RecentUpdates from "./recentUpdates";
 
 import { useNavigate } from "react-router-dom";
-
 
 function Copyright(props) {
   return (
@@ -104,7 +104,7 @@ const myObj = {
   },
   get friendReqCount() {
     return this._friendReqCount;
-  }
+  },
 };
 const Follows = () => {
   const [open, setOpen] = React.useState(true);
@@ -212,19 +212,16 @@ const Follows = () => {
     navigate(`/`);
   };
 
- 
-
   const fetchPendingStatus = async () => {
-    
-    try{
+    try {
       const response = await axios.get("/pending");
       setUserInfo(response.data[1]);
       friendReqCount = response.data[1].length;
       myObj.friendReqCount = response.data[1].length;
-        console.log(response.data[1]);
-    }catch(error){
-        console.log(error);
-      }
+      console.log(response.data[1]);
+    } catch (error) {
+      console.log(error);
+    }
   };
   useEffect(() => {
     fetchPendingStatus();
@@ -279,16 +276,8 @@ const Follows = () => {
                   spacing={2}
                   sx={{ justifyContent: "flex-end" }}
                 >
-                  <Typography
-                    component="h5"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
-                  >
-                    {username}
-                  </Typography>
+                  <RecentUpdates />
+
                   <IconButton
                     size="large"
                     aria-label="account of current user"
@@ -318,7 +307,16 @@ const Follows = () => {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="contained" onClick={handleLogout}>
+              <Button
+                variant="contained"
+                size="medium"
+                style={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+                  fontSize: "13px",
+                }}
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </Stack>
@@ -379,56 +377,59 @@ const Follows = () => {
                     <>
                       {userInfo.map((user, index) => (
                         <>
-                        <Stack direction="row" spacing={2} key={index}>
-                          <Container
-                            maxWidth="sm"
-                            sx={{
-                              display: "flex",
-                              justifyContent: "left",
-                              alignItems: "center",
-                              height: "20vh",
-                            }}
-                          >
-                            <div>
-                              <p>
-                                <strong>Username:</strong> {user.username}
-                              </p>
-                              <p>
-                                <strong>First Name:</strong> {user.fName}
-                              </p>
-                              <p>
-                                <strong>Last Name:</strong> {user.lName}
-                              </p>
-                              
-                            </div>
-                          </Container>
-                          <Container
-                            maxWidth="sm"
-                            sx={{
-                              display: "flex",
-                              justifyContent: "right",
-                              alignItems: "center",
-                              height: "20vh",
-                            }}
-                          >
-                            <Stack direction="row" spacing={2}>
-                              <Button
-                                variant="contained"
-                                onClick={(e) =>
-                                  acceptPendingReq(e, user.username)
-                                }
-                              >
-                                Accept
-                              </Button>
-                              <Button variant="contained"
-                                onClick={(e) =>
-                                  rejectPendingReq(e, user.username)
-                                }>Reject</Button>
-                            </Stack>
-                          </Container>
-                        </Stack>
-                         <Divider sx={{ my: 1 }} />
-                         </>
+                          <Stack direction="row" spacing={2} key={index}>
+                            <Container
+                              maxWidth="sm"
+                              sx={{
+                                display: "flex",
+                                justifyContent: "left",
+                                alignItems: "center",
+                                height: "20vh",
+                              }}
+                            >
+                              <div>
+                                <p>
+                                  <strong>Username:</strong> {user.username}
+                                </p>
+                                <p>
+                                  <strong>First Name:</strong> {user.fName}
+                                </p>
+                                <p>
+                                  <strong>Last Name:</strong> {user.lName}
+                                </p>
+                              </div>
+                            </Container>
+                            <Container
+                              maxWidth="sm"
+                              sx={{
+                                display: "flex",
+                                justifyContent: "right",
+                                alignItems: "center",
+                                height: "20vh",
+                              }}
+                            >
+                              <Stack direction="row" spacing={2}>
+                                <Button
+                                  variant="contained"
+                                  onClick={(e) =>
+                                    acceptPendingReq(e, user.username)
+                                  }
+                                >
+                                  Accept
+                                </Button>
+                                <Button
+                                  variant="contained"
+                                  onClick={(e) =>
+                                    rejectPendingReq(e, user.username)
+                                  }
+                                >
+                                  Reject
+                                </Button>
+                              </Stack>
+                            </Container>
+                          </Stack>
+                          <Divider sx={{ my: 1 }} />
+                        </>
                       ))}
                     </>
                   ) : (
@@ -446,6 +447,5 @@ const Follows = () => {
     </ThemeProvider>
   );
 };
-export { friendReqCount, myObj};
+export { friendReqCount, myObj };
 export default Follows;
-

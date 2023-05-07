@@ -29,6 +29,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import SearchUsers from "./searchUsers";
 import { useNavigate } from "react-router-dom";
+import RecentUpdates from "./recentUpdates";
 
 function Copyright(props) {
   return (
@@ -171,9 +172,6 @@ const Follows = () => {
     fetchPlaylist();
   }, []);
 
-
-
-
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
@@ -223,16 +221,8 @@ const Follows = () => {
                   spacing={2}
                   sx={{ justifyContent: "flex-end" }}
                 >
-                  <Typography
-                    component="h5"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
-                  >
-                    {username}
-                  </Typography>
+                  <RecentUpdates />
+
                   <IconButton
                     size="large"
                     aria-label="account of current user"
@@ -262,7 +252,16 @@ const Follows = () => {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="contained" onClick={handleLogout}>
+              <Button
+                variant="contained"
+                size="medium"
+                style={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+                  fontSize: "13px",
+                }}
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </Stack>
@@ -302,24 +301,28 @@ const Follows = () => {
         >
           <Toolbar />
           <Container
-             maxWidth="sm"
-             sx={{
-               display: "flex",
-               justifyContent: "center",
-               marginTop: "60px",
-             }}
+            maxWidth="sm"
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "60px",
+            }}
           >
             <Stack direction="column" spacing={2}>
               <Stack
                 direction="column"
                 spacing={1}
-                style={{ textAlign: "center", paddingBottom: "50px" }}
+                sx={{
+                  justifyContent: "center",
+                  textAlign: "center",
+                  paddingBottom: "50px",
+                }}
               >
                 <Typography variant="h3" gutterBottom>
                   Friends
                 </Typography>
 
-                <SearchUsers/>
+                <SearchUsers />
                 <Paper style={{ width: "700px" }}>
                   {userInfo?.length > 0 ? (
                     <>
