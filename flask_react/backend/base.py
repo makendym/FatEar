@@ -144,8 +144,7 @@ def registerAuths():
  
 
 @api.route('/home')
-def home():
-    reconnect()
+def home(): 
     user = session.get('username')
     if user is None:
         return "User is not logged in", 401
@@ -230,7 +229,6 @@ def search():
 
 @api.route('/genre', methods=['GET'])
 def genre():
-    reconnect()
     cursor = conn.cursor()
     query = 'SELECT DISTINCT genre FROM songGenre'
     cursor.execute(query)
