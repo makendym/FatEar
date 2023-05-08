@@ -28,6 +28,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import RecentUpdates from "./recentUpdates";
+import Notifications from "./notification";
 
 import { useNavigate } from "react-router-dom";
 
@@ -106,7 +107,7 @@ const myObj = {
     return this._friendReqCount;
   },
 };
-const Follows = () => {
+const FriendRequest = () => {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -163,7 +164,13 @@ const Follows = () => {
   };
 
   const [userInfo, setUserInfo] = useState([]);
+  const [errors, setErrors] = useState("");
+  const [success, setSuccess] = useState("");
 
+  const handleCloseNotification = () => {
+    setSuccess("");
+    setErrors("");
+  };
   const acceptPendingReq = (event, user2) => {
     event.preventDefault();
 
@@ -175,10 +182,13 @@ const Follows = () => {
         const res = response.data;
         console.log(res);
         console.log(user2);
+        setSuccess(res.success);
+        setErrors(res.error);
         fetchPendingStatus();
       })
       .catch((error) => {
         if (error.response) {
+          setErrors(error.response.error);
           console.log(error.response);
           console.log(error.response.status);
           console.log(error.response.headers);
@@ -197,10 +207,13 @@ const Follows = () => {
         const res = response.data;
         console.log(res);
         console.log(user2);
+        setSuccess(res.success);
+        setErrors(res.error);
         fetchPendingStatus();
       })
       .catch((error) => {
         if (error.response) {
+          setErrors(error.response.error);
           console.log(error.response);
           console.log(error.response.status);
           console.log(error.response.headers);
@@ -440,6 +453,21 @@ const Follows = () => {
                 </Paper>
               </Stack>
             </Stack>
+            {success ? (
+              <Notifications
+                type="success"
+                message={success}
+                onClose={handleCloseNotification}
+              />
+            ) : (
+              errors && (
+                <Notifications
+                  type="error"
+                  message={errors}
+                  onClose={handleCloseNotification}
+                />
+              )
+            )}
           </Container>
         </Box>
       </Box>
@@ -448,4 +476,4 @@ const Follows = () => {
   );
 };
 export { friendReqCount, myObj };
-export default Follows;
+export default FriendRequest;

@@ -111,10 +111,10 @@ function Register() {
         <Grid item xs={12} sm={6}>
           <TextField
             autoComplete="fname"
-            name="firstName"
+            name="fname"
             required
             fullWidth
-            id="firstName"
+            id="fname"
             label="First Name"
             autoFocus
             value={fname}
@@ -125,9 +125,9 @@ function Register() {
           <TextField
             required
             fullWidth
-            id="lastName"
+            id="lname"
             label="Last Name"
-            name="lastName"
+            name="lname"
             autoComplete="lname"
             value={lname}
             onChange={(event) => setLname(event.target.value)}

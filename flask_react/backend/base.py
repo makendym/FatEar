@@ -28,39 +28,16 @@ if __name__ == '__main__':
     api.run(debug=TRUE)
 
 
-@api.route('/')
-def hello():
-    return render_template('index.html')
-
-
-@api.route('/register')
-def register():
-    return render_template('register.html')
-
-
-# Authenticates the login
-@api.route('/loginAuth', methods=['GET', 'POST'])
-def loginAuth():
-    # Grab information from the form
-    username = request.form.get('username')
-    password = request.form.get('password')
-
-    # Check if the username and password are valid
-    cursor = conn.cursor()
-    query = 'SELECT * FROM user WHERE username = %s AND password = %s'
-    cursor.execute(query, (username, password))
-    data = cursor.fetchone()
-    cursor.close()
-
-    # If the username and password are valid, store the username in the session
-    if data:
-        session['username'] = username
-        return jsonify({"success": "User logged in successfully."})
-
-    # If the username and password are not valid, return an error message
-    else:
-        error = 'Invalid username or password.'
-        return jsonify({"error": error})
+def reconnect():
+    global conn
+    conn.close()
+    conn = pymysql.connect(host='localhost',
+                           port=8889,
+                           user='root',
+                           password='root',
+                           db='Project_pt2',
+                           charset='utf8mb4',
+                           cursorclass=pymysql.cursors.DictCursor)
 
 
 @api.route('/loginAuths', methods=['GET', 'POST'])
@@ -69,26 +46,51 @@ def loginAuths():
     username = request.form.get('username')
     pwd = request.form.get('pwd')
 
+    reconnect()
     # Check if the username and password are valid
     cursor = conn.cursor()
-    query = 'SELECT * FROM user WHERE username = %s AND pwd = %s'
-    cursor.execute(query, (username, pwd))
-    data = cursor.fetchone()
+    try:
+        query = 'SELECT * FROM user WHERE username = %s AND pwd = %s'
+        cursor.execute(query, (username, pwd))
+        data = cursor.fetchone()
 
-    # If the username and password are valid, store the username in the session
-    if data:
-        # Set lastLogin to today's date
-        query = 'UPDATE user SET lastLogin = %s WHERE username = %s'
-        cursor.execute(query, (date.today(), username,))
-        conn.commit()
-        cursor.close()
-        session['username'] = username
-        return jsonify({"success": "User logged in successfully."})
+        # If the username and password are valid, store the username in the session
+        if data:
+            # Set lastLogin to today's date
+            query = 'UPDATE user SET lastLogin = %s WHERE username = %s'
+            cursor.execute(query, (date.today(), username,))
+            conn.commit()
+            cursor.close()
+            session['username'] = username
+            return jsonify({"success": "User logged in successfully."})
 
-    # If the username and password are not valid, return an error message
-    else:
-        error = 'Invalid username or password.'
-        return jsonify({"error": error})
+        # If the username and password are not valid, return an error message
+        else:
+            error = 'Invalid username or password.'
+            return jsonify({"error": error})
+
+    except pymysql.err.OperationalError:
+        # Handle a dropped connection by reconnecting and retrying the query
+        reconnect()
+        cursor = conn.cursor()
+        query = 'SELECT * FROM user WHERE username = %s AND pwd = %s'
+        cursor.execute(query, (username, pwd))
+        data = cursor.fetchone()
+
+        # If the username and password are valid, store the username in the session
+        if data:
+            # Set lastLogin to today's date
+            query = 'UPDATE user SET lastLogin = %s WHERE username = %s'
+            cursor.execute(query, (date.today(), username,))
+            conn.commit()
+            cursor.close()
+            session['username'] = username
+            return jsonify({"success": "User logged in successfully."})
+
+        # If the username and password are not valid, return an error message
+        else:
+            error = 'Invalid username or password.'
+            return jsonify({"error": error})
 
 
 @api.route('/registerAuths', methods=['POST'])
@@ -102,7 +104,6 @@ def registerAuths():
 
     # Cursor used to send queries
     cursor = conn.cursor()
-
     # Executes query to check if the username exists
     query = 'SELECT * FROM user WHERE username = %s'
     cursor.execute(query, (username,))
@@ -111,39 +112,40 @@ def registerAuths():
     # If the previous query returns data, then user exists
     if data:
         error = "This username already exists"
-        return jsonify({"error": error})
+        return jsonify({"error": error}), 400
     else:
         # Inserts new user data into the database
-        ins = 'INSERT INTO user (username, pwd, fname, lname, lastlogin, nickname) VALUES (%s, %s, %s, %s, %s)'
+        ins = 'INSERT INTO user (username, pwd, fname, lname, lastlogin, nickname) VALUES (%s, %s, %s, %s, %s, %s)'
         if len(username) < 1 or len(username) > 10:
             error = "Username cannot exceed 10 characters."
-            return jsonify({"error": error})
+            return jsonify({"error": error}), 400
 
         if len(pwd) > 15:
             error = "Password cannot exceed 15 characters."
-            return jsonify({"error": error})
+            return jsonify({"error": error}), 400
 
         if len(fname) < 1 or len(fname) > 20:
             error = "First name must be between 1 and 20 characters."
-            return jsonify({"error": error})
+            return jsonify({"error": error}), 400
 
         if len(lname) < 1 or len(lname) > 20:
             error = "Last name must be between 1 and 20 characters."
-            return jsonify({"error": error})
+            return jsonify({"error": error}), 400
 
         if len(nickname) > 20:
             error = "Nickname cannot exceed 20 characters."
-            return jsonify({"error": error})
+            return jsonify({"error": error}), 400
 
-        cursor.execute(ins, (username, pwd, fname,
-                       lname, date.today(), nickname))
+        cursor.execute(ins, (username, pwd, fname,lname, date.today(), nickname))
         conn.commit()
         cursor.close()
         return jsonify({"success": "User registered successfully"})
 
+ 
 
 @api.route('/home')
 def home():
+    reconnect()
     user = session.get('username')
     if user is None:
         return "User is not logged in", 401
@@ -152,6 +154,7 @@ def home():
 
 @api.route('/logout')
 def logout():
+    reconnect()
     session.pop('username')
     return redirect('/')
 
@@ -161,16 +164,16 @@ def search():
     genre = request.args.get('genre')
     search = request.args.get('search')
     rating = request.args.get('rating')
+    reconnect()
     cursor = conn.cursor()
     if genre and search:
-        query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre, rateSong.stars \
+        query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, songGenre.genre\
                 FROM song \
                 JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID \
                 JOIN artist ON artist.artistID = artistPerformsSong.artistID \
                 JOIN songInAlbum ON songInAlbum.songID = song.songID \
                 JOIN album ON album.albumID = songInAlbum.albumID \
                 JOIN songGenre ON songGenre.songID = song.songID \
-                JOIN rateSong ON rateSong.songID = song.songID \
                 WHERE songGenre.genre = %s AND artist.fname = %s"
         cursor.execute(query, (genre, search))
     elif genre:
@@ -188,7 +191,6 @@ def search():
              WHERE songGenre.genre = %s \
              GROUP BY song.songID"
         cursor.execute(query, (genre,))
-
 
     elif search:
         query = "SELECT song.songID, song.title, artist.fname, artist.lname, album.albumTitle, rateSong.stars\
@@ -228,6 +230,7 @@ def search():
 
 @api.route('/genre', methods=['GET'])
 def genre():
+    reconnect()
     cursor = conn.cursor()
     query = 'SELECT DISTINCT genre FROM songGenre'
     cursor.execute(query)
@@ -240,6 +243,7 @@ def genre():
 def createPlaylist():
     user = session['username']
     playlisttitle = request.json.get('playlisttitle')
+    reconnect()
     cursor = conn.cursor()
 
     # Check if playlist title already exists
@@ -251,19 +255,21 @@ def createPlaylist():
         return jsonify({"error": True, "message": "Playlist title already exists"})
 
     if playlisttitle:
-        query = 'INSERT INTO playlist (playlistTitle, username, createdAt) VALUES (%s, %s, date.today())'
-        cursor.execute(query, (playlisttitle, user, date.today()))
+        query = 'INSERT INTO playlist (playlistTitle, username, createdAt) VALUES (%s, %s, %s)'
+        cursor.execute(query, (playlisttitle, user, date.today().strftime('%Y-%m-%d')))
     else:
         return jsonify({"error": True, "message": "Missing playlist title"})
 
     conn.commit()
     cursor.close()
-    return jsonify({"success": True})
+    return jsonify({"success": "successfully added to playlist"})
+
 
 
 @api.route('/list-user-playlist')
 def listPlaylist():
     user = session['username']
+    reconnect()
     cursor = conn.cursor()
     query = 'SELECT playlistTitle FROM playlist WHERE playlist.username = %s'
     cursor.execute(query, (user))
@@ -275,6 +281,7 @@ def listPlaylist():
 @api.route('/userprofile')
 def userProfile():
     user = session['username']
+    reconnect()
     cursor = conn.cursor()
     query = 'SELECT user.username, user.fname, user.lname, user.nickname\
             FROM user\
@@ -294,6 +301,7 @@ def userProfile():
 @api.route('/followers')
 def followers():
     user = session['username']
+    reconnect()
     cursor = conn.cursor()
     query = 'SELECT u.fName, u.lName, u.username\
             FROM user u JOIN follows f ON u.username = f.follower\
@@ -307,6 +315,7 @@ def followers():
 @api.route('/following')
 def following():
     user = session['username']
+    reconnect()
     cursor = conn.cursor()
     query = 'SELECT u.fName, u.lName, u.username\
             FROM user u JOIN follows f ON u.username = f.follows\
@@ -320,6 +329,7 @@ def following():
 @api.route('/friends')
 def friends():
     user = session['username']
+    reconnect()
     cursor = conn.cursor()
     query = 'SELECT  f1.user2, u2.fname, u2.lname\
             FROM friend f1 INNER JOIN user u1 ON u1.username = f1.user1 INNER JOIN user u2 ON u2.username = f1.user2\
@@ -337,6 +347,7 @@ def friends():
 @api.route('/pending')
 def pending():
     user = session['username']
+    reconnect()
     cursor = conn.cursor()
     query = 'SELECT u.fName, u.lName, u.username\
     FROM user u JOIN friend f ON u.username = f.user1\
@@ -351,18 +362,25 @@ def pending():
 def accept():
     user = session['username']
     user2 = request.json.get('user2')
+    reconnect()
     cursor = conn.cursor()
-    query = "UPDATE friend SET acceptStatus='Accepted', updatedAt=%s WHERE user1=%s AND user2=%s"
-    cursor.execute(query, (date.today(), user2, user))
-    conn.commit()
-    cursor.close()
-    return jsonify({"success": True},)
+    try:
+        query = "UPDATE friend SET acceptStatus='Accepted', updatedAt=%s WHERE user1=%s AND user2=%s"
+        cursor.execute(query, (date.today(), user2, user))
+        conn.commit()
+        cursor.close()
+        return jsonify({"success": "successfully accepted"})
+    except Exception as e:
+        cursor.close()
+        return jsonify({"error": str(e)})
+
 
 
 @api.route('/reject', methods=['POST'])
 def reject():
     user = session['username']
     user2 = request.json.get('user2')
+    reconnect()
     cursor = conn.cursor()
     query = "UPDATE friend SET acceptStatus='Not accepted', updatedAt=%s WHERE user1=%s AND user2=%s"
     cursor.execute(query, (date.today(), user2, user))
@@ -376,6 +394,7 @@ def postReview():
     user = session.get('username')
     songId = request.json.get('songID')
     review = request.json.get('review')
+    reconnect()
     cursor = conn.cursor()
 
     # Check if user has already reviewed the song
@@ -413,6 +432,7 @@ def postRating():
     user = session['username']
     songId = request.json.get('songId')
     stars = request.json.get('stars')
+    reconnect()
     cursor = conn.cursor()
 
     # Check if the user has already rated the song
@@ -457,6 +477,7 @@ def postAlbumReview():
     user = session['username']
     songId = request.json.get('albumId')
     review = request.json.get('review')
+    reconnect()
     cursor = conn.cursor()
 
     # Check if user has already reviewed the album
@@ -493,6 +514,7 @@ def postAlbumRating():
     user = session['username']
     songId = request.json.get('albumId')
     stars = request.json.get('stars')
+    reconnect()
     cursor = conn.cursor()
 
     # Check if the user has already rated the album
@@ -531,6 +553,7 @@ def add_to_playlist():
     user = session['username']
     playlistTitle = request.json.get('playlistTitle')
     songID = request.json.get('songID')
+    reconnect()
     cursor = conn.cursor()
     query = "SELECT * FROM songInPlaylist WHERE playlistTitle = %s AND username = %s AND songID = %s"
     cursor.execute(query, (playlistTitle, user, songID))
@@ -550,8 +573,10 @@ def add_to_playlist():
 def showPlaylistSongs():
     user = session.get('username')
     title = request.args.get('title')
+    
     if not title or not user:
         return jsonify({'error': 'Missing playlist title or username'})
+    reconnect()
     cursor = conn.cursor()
     query = "SELECT song.title, artist.fname, artist.lname \
              FROM song \
@@ -571,6 +596,7 @@ def showPlaylistSongs():
 @api.route('/show-post')
 def showPost():
     user = session.get('username')
+    reconnect()
     cursor = conn.cursor()
     query = """SELECT DISTINCT reviewAlbum.username, reviewAlbum.reviewText, reviewAlbum.reviewDate, 'Album' AS reviewType
             FROM reviewAlbum JOIN (
@@ -623,7 +649,9 @@ def showPost():
     cursor.execute(query, query_values)
     data = cursor.fetchall()
     cursor.close()
+    
     return jsonify(data)
+
 
 @api.route('/search-users')
 def search_users():
@@ -631,7 +659,7 @@ def search_users():
     search_query = request.args.get('q')
     if not search_query:
         return jsonify([])
-    
+    reconnect()
     cursor = conn.cursor()
     query = "SELECT user.fname, user.lname, user.username FROM user WHERE user.fName LIKE %s OR user.lname LIKE %s"
     search_term = "%" + search_query + "%"
@@ -640,10 +668,12 @@ def search_users():
     cursor.close()
     return jsonify(data)
 
+
 @api.route('/add-friend', methods=['POST'])
 def addFriend():
     user = session.get('username')
     requestedUser = request.json.get('requestedUser')
+    reconnect()
     cursor = conn.cursor()
     try:
         # Check if friend request already exists
@@ -660,7 +690,8 @@ def addFriend():
             return jsonify({"error": "You are already friends"})
         # Insert the new friend request
         query = "INSERT INTO friend VALUES (%s, %s, 'pending', %s, %s, %s)"
-        cursor.execute(query, (user, requestedUser, user, date.today(), date.today()))
+        cursor.execute(query, (user, requestedUser,
+                       user, date.today(), date.today()))
         conn.commit()
         cursor.close()
         return jsonify({'message': 'Friend request sent successfully'})
@@ -694,6 +725,7 @@ def getNotified():
     '''
 
     # execute the queries and retrieve the results
+    # reconnect()
     with conn.cursor() as cursor:
         cursor.execute(new_songs_query, (user,))
         new_songs = cursor.fetchall()

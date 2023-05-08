@@ -20,6 +20,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import axios from "axios";
 import Divider from "@mui/material/Divider";
+import Rating from "@mui/material/Rating";
+
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -108,6 +110,7 @@ function DashboardContent() {
         params: {
           genre: genre,
           search: search,
+          rating: rating,
         },
       })
       .then((response) => {
@@ -123,6 +126,24 @@ function DashboardContent() {
         }
       });
   };
+  useEffect(() => {
+  const fetchSearchResults = async () => {
+    try {
+      const response = await axios.get("/search", {
+        params: {
+          genre: genre,
+          search: search,
+          rating: rating,
+        },
+      });
+      setResults(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  fetchSearchResults();
+}, [genre, search]);
 
   const handleGenreChange = (event) => {
     setGenre(event.target.value);
@@ -257,11 +278,11 @@ function DashboardContent() {
                         onChange={handleRatingChange}
                       >
                         <MenuItem value="">None</MenuItem>
-                        <MenuItem value={1}>1</MenuItem>
-                        <MenuItem value={2}>2</MenuItem>
-                        <MenuItem value={3}>3</MenuItem>
-                        <MenuItem value={4}>4</MenuItem>
-                        <MenuItem value={5}>5</MenuItem>
+                        <MenuItem value={1}>1+</MenuItem>
+                        <MenuItem value={2}>2+</MenuItem>
+                        <MenuItem value={3}>3+</MenuItem>
+                        <MenuItem value={4}>4+</MenuItem>
+                        <MenuItem value={5}>5+</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>
@@ -295,7 +316,6 @@ function DashboardContent() {
             </Stack>
           </Container>
           <Container>
-
             <Paper sx={{ p: 2 }}>
               {results?.length > 0 ? (
                 <>
@@ -329,7 +349,6 @@ function DashboardContent() {
                             )}
                           </div>
                         </Container>
-                       
                       </Stack>
                       <Divider sx={{ my: 1 }} />
                     </>

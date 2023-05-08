@@ -97,7 +97,7 @@ const Drawer = styled(MuiDrawer, {
 
 const mdTheme = createTheme();
 
-const Follows = () => {
+const Friends = () => {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -356,4 +356,4 @@ const Follows = () => {
     </ThemeProvider>
   );
 };
-export default Follows;
+export default Friends;
