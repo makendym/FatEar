@@ -27,7 +27,9 @@ import Fade from "@mui/material/Fade";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-import ShowSongs from './showSongs'
+import RecentUpdates from "./recentUpdates";
+import Notifications from "./notification";
+import ShowSongs from "./showSongs";
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -163,6 +165,13 @@ const Playlist = () => {
   const handleClose2 = () => setOpen2(false);
   const [playlistTitle, setPlaylistTitle] = useState("");
   const [userPlaylist, setUserPlaylist] = useState([]);
+  const [errors, setErrors] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleCloseNotification = () => {
+    setSuccess("");
+    setErrors("");
+  };
   const handlePlaylistTittleChange = (event) => {
     setPlaylistTitle(event.target.value);
   };
@@ -189,10 +198,13 @@ const Playlist = () => {
       .then((response) => {
         const res = response.data;
         console.log(res);
+        setSuccess(res.success);
+        setErrors(res.message);
         console.log(playlistTitle);
       })
       .catch((error) => {
         if (error.response) {
+          setErrors(error.response);
           console.log(error.response);
           console.log(error.response.status);
           console.log(error.response.headers);
@@ -249,16 +261,8 @@ const Playlist = () => {
                   spacing={2}
                   sx={{ justifyContent: "flex-end" }}
                 >
-                  <Typography
-                    component="h5"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
-                  >
-                    {username}
-                  </Typography>
+                  <RecentUpdates />
+
                   <IconButton
                     size="large"
                     aria-label="account of current user"
@@ -288,7 +292,16 @@ const Playlist = () => {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="contained" onClick={handleLogout}>
+              <Button
+                variant="contained"
+                size="medium"
+                style={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+                  fontSize: "13px",
+                }}
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </Stack>
@@ -400,10 +413,24 @@ const Playlist = () => {
                       </p>
                     </Button>
                   </Paper>
-                  
                 ))}
               </Stack>
             </Stack>
+            {success ? (
+              <Notifications
+                type="success"
+                message={success}
+                onClose={handleCloseNotification}
+              />
+            ) : (
+              errors && (
+                <Notifications
+                  type="error"
+                  message={errors}
+                  onClose={handleCloseNotification}
+                />
+              )
+            )}
           </Container>
         </Box>
       </Box>

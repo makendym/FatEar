@@ -20,6 +20,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import axios from "axios";
 import Divider from "@mui/material/Divider";
+import Rating from "@mui/material/Rating";
+
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -69,7 +71,7 @@ function DashboardContent() {
   const [genre, setGenre] = useState("");
   const [rating, setRating] = useState("");
   const [search, setSearch] = useState("");
-  const [result, setResult] = useState([]);
+  const [results, setResults] = useState([]);
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -108,11 +110,12 @@ function DashboardContent() {
         params: {
           genre: genre,
           search: search,
+          rating: rating,
         },
       })
       .then((response) => {
         const res = response.data;
-        setResult(response.data);
+        setResults(response.data);
         console.log(res);
       })
       .catch((error) => {
@@ -123,6 +126,24 @@ function DashboardContent() {
         }
       });
   };
+  useEffect(() => {
+  const fetchSearchResults = async () => {
+    try {
+      const response = await axios.get("/search", {
+        params: {
+          genre: genre,
+          search: search,
+          rating: rating,
+        },
+      });
+      setResults(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  fetchSearchResults();
+}, [genre, search]);
 
   const handleGenreChange = (event) => {
     setGenre(event.target.value);
@@ -213,8 +234,7 @@ function DashboardContent() {
                 </Typography>
 
                 <Typography variant="subtitle1" align="center" gutterBottom>
-                  This will be your favorite streaming platform(specify
-                  categories in the search)
+                  This will be your favorite streaming platform
                 </Typography>
               </Stack>
               <Box
@@ -258,11 +278,11 @@ function DashboardContent() {
                         onChange={handleRatingChange}
                       >
                         <MenuItem value="">None</MenuItem>
-                        <MenuItem value={1}>1</MenuItem>
-                        <MenuItem value={2}>2</MenuItem>
-                        <MenuItem value={3}>3</MenuItem>
-                        <MenuItem value={4}>4</MenuItem>
-                        <MenuItem value={5}>5</MenuItem>
+                        <MenuItem value={1}>1+</MenuItem>
+                        <MenuItem value={2}>2+</MenuItem>
+                        <MenuItem value={3}>3+</MenuItem>
+                        <MenuItem value={4}>4+</MenuItem>
+                        <MenuItem value={5}>5+</MenuItem>
                       </Select>
                     </FormControl>
                   </Box>
@@ -296,29 +316,10 @@ function DashboardContent() {
             </Stack>
           </Container>
           <Container>
-            {/* {result.map((result, index) => (
-              <Paper key={index} value={result}>
-                <p>
-                  <strong>Artist:</strong> {result.fname} {result.lname}
-                </p>
-                <p>
-                  <strong>Title:</strong> {result.title}
-                </p>
-                <p>
-                  <strong>Album:</strong> {result.albumTitle}
-                </p>
-                {result.genre && (
-                  <p>
-                    <strong>Genre:</strong> {result.genre}
-                  </p>
-                )}
-              </Paper>
-            ))} */}
-
             <Paper sx={{ p: 2 }}>
-              {result?.length > 0 ? (
+              {results?.length > 0 ? (
                 <>
-                  {result.map((result, index) => (
+                  {results.map((result, index) => (
                     <>
                       <Stack direction="row" spacing={2} key={index}>
                         <Container
@@ -347,34 +348,6 @@ function DashboardContent() {
                               </p>
                             )}
                           </div>
-                        </Container>
-                        <Container
-                          maxWidth="sm"
-                          sx={{
-                            display: "flex",
-                            justifyContent: "right",
-                            alignItems: "center",
-                            height: "20vh",
-                          }}
-                        >
-                          <Stack direction="row" spacing={2}>
-                            <Button
-                              variant="contained"
-                              // onClick={(e) =>
-                              //   acceptPendingReq(e, user.username)
-                              // }
-                            >
-                              Accept
-                            </Button>
-                            <Button
-                              variant="contained"
-                              // onClick={(e) =>
-                              //   rejectPendingReq(e, user.username)
-                              // }
-                            >
-                              Reject
-                            </Button>
-                          </Stack>
                         </Container>
                       </Stack>
                       <Divider sx={{ my: 1 }} />

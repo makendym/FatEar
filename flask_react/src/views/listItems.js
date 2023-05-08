@@ -13,6 +13,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import Divider from "@mui/material/Divider";
 import axios from "axios";
 import Badge from "@mui/material/Badge";
+import {friendReqCount1, myObj} from "./userHome"
 
 const MainListItems = () => {
   const navigate = useNavigate();
@@ -35,6 +36,8 @@ const MainListItems = () => {
 
   const goToFriendRequest = () => {
     navigate(`/friend-request`);
+    myObj._friendReqCount = 0;
+    
   };
   const goToPlaylist = () => {
     navigate(`/playlist`);
@@ -70,9 +73,7 @@ const MainListItems = () => {
       </ListItemButton>
       <ListItemButton onClick={goToPosts}>
         <ListItemIcon>
-          <Badge badgeContent={4} color="secondary">
             <ForumIcon />
-          </Badge>
         </ListItemIcon>
         <ListItemText primary="Posts" />
       </ListItemButton>
@@ -84,23 +85,19 @@ const MainListItems = () => {
       </ListItemButton>
       <ListItemButton onClick={goToFollows}>
         <ListItemIcon>
-          <Badge badgeContent={10} color="secondary">
             <PeopleIcon />
-          </Badge>
         </ListItemIcon>
         <ListItemText primary="Follows" />
       </ListItemButton>
       <ListItemButton onClick={goToFrieds}>
         <ListItemIcon>
-          <Badge badgeContent={7} color="secondary">
             <BarChartIcon />
-          </Badge>
         </ListItemIcon>
         <ListItemText primary="Friends" />
       </ListItemButton>
       <ListItemButton onClick={goToFriendRequest}>
         <ListItemIcon>
-          <Badge badgeContent={9} color="secondary">
+          <Badge badgeContent={myObj.friendReqCount} color="secondary">
             <PersonAddIcon />
           </Badge>
         </ListItemIcon>

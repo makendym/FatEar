@@ -31,6 +31,7 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import PropTypes from "prop-types";
 import { useTheme } from "@mui/material/styles";
+import RecentUpdates from "./recentUpdates";
 
 import { useNavigate } from "react-router-dom";
 
@@ -143,19 +144,7 @@ const Follows = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get("/home");
-        setUsername(response.data.username);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
-      }
-    };
-    fetchPosts();
-  }, []);
+ 
 
   const handleLogout = async () => {
     try {
@@ -205,10 +194,6 @@ const Follows = () => {
         console.error(error);
       }
     };
-    fetchFollowers();
-  }, []);
-
-  useEffect(() => {
     const fetchFollowing = async () => {
       try {
         const response = await axios.get("/following");
@@ -218,8 +203,21 @@ const Follows = () => {
         console.error(error);
       }
     };
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get("/home");
+        setUsername(response.data.username);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+    fetchPosts();
     fetchFollowing();
+    fetchFollowers();
   }, []);
+
   const theme = useTheme();
   const [value, setValue] = React.useState(0);
 
@@ -280,16 +278,8 @@ const Follows = () => {
                   spacing={2}
                   sx={{ justifyContent: "flex-end" }}
                 >
-                  <Typography
-                    component="h5"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
-                  >
-                    {username}
-                  </Typography>
+                  <RecentUpdates />
+
                   <IconButton
                     size="large"
                     aria-label="account of current user"
@@ -319,7 +309,16 @@ const Follows = () => {
                   </Menu>
                 </Stack>
               </Container>
-              <Button variant="contained" onClick={handleLogout}>
+              <Button
+                variant="contained"
+                size="medium"
+                style={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+                  fontSize: "13px",
+                }}
+                onClick={handleLogout}
+              >
                 Logout
               </Button>
             </Stack>

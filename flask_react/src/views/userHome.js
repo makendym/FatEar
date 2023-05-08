@@ -32,11 +32,9 @@ import AddIcon from "@mui/icons-material/Add";
 import Backdrop from "@mui/material/Backdrop";
 import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
-
+import ReviewForm from "./reviewForm";
+import RecentUpdates from "./recentUpdates";
 import { useNavigate } from "react-router-dom";
-// import Chart from './Chart';
-// import Deposits from './Deposits';
-// import Orders from './Orders';
 
 function Copyright(props) {
   return (
@@ -57,7 +55,7 @@ function Copyright(props) {
 }
 
 const drawerWidth = 240;
-
+let friendReqCount1 = 0;
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
@@ -103,7 +101,15 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 const mdTheme = createTheme();
-
+const myObj = {
+  _friendReqCount: 0,
+  set friendReqCount(value) {
+    this._friendReqCount = value;
+  },
+  get friendReqCount() {
+    return this._friendReqCount;
+  },
+};
 function DashboardContentUser() {
   const [open, setOpen] = React.useState(true);
   const [username, setUsername] = useState("");
@@ -112,7 +118,7 @@ function DashboardContentUser() {
   const [genre, setGenre] = useState("");
   const [rating, setRating] = useState("");
   const [search, setSearch] = useState("");
-  const [result, setResult] = useState([]);
+  const [results, setResults] = useState([]);
   const navigate = useNavigate();
   const goToProfile = () => {
     navigate(`/userprofile`);
@@ -121,6 +127,7 @@ function DashboardContentUser() {
   const toggleDrawer = () => {
     setOpen(!open);
   };
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -130,10 +137,7 @@ function DashboardContentUser() {
         console.error(error);
       }
     };
-    fetchPosts();
-  }, []);
 
-  useEffect(() => {
     const fetchGenreList = async () => {
       try {
         const response = await axios.get("/genre");
@@ -145,13 +149,42 @@ function DashboardContentUser() {
         setLoading(false);
       }
     };
+
+    const fetchSearchResults = async () => {
+      try {
+        const response = await axios.get("/search", {
+          params: {
+            genre: genre,
+            search: search,
+            rating: rating,
+          },
+        });
+        setResults(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const fetchPendingStatus = async () => {
+      try {
+        const response = await axios.get("/pending");
+        friendReqCount1 = response.data[1].length;
+        myObj.friendReqCount = response.data[1].length;
+        console.log(response.data[1]);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchPosts();
     fetchGenreList();
-  }, []);
+    fetchSearchResults();
+    fetchPendingStatus();
+  }, [genre, search, rating]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const formData = new FormData(event.target);
-
     axios
       .get("/search", {
         params: {
@@ -162,7 +195,7 @@ function DashboardContentUser() {
       })
       .then((response) => {
         const res = response.data;
-        setResult(response.data);
+        setResults(response.data);
         console.log(res);
       })
       .catch((error) => {
@@ -174,14 +207,24 @@ function DashboardContentUser() {
       });
   };
 
-  const handleGenreChange = (event) => {
-    setGenre(event.target.value);
-  };
-  const handleRatingChange = (event) => {
-    setRating(event.target.value);
-  };
-  const handleSearchChange = (event) => {
-    setSearch(event.target.value);
+  const handleRating = (event, songId, stars) => {
+    event.preventDefault();
+    axios
+      .post("/post-rating", {
+        songId: songId,
+        stars: stars,
+      })
+      .then((response) => {
+        //setResult(response.data);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
   };
 
   const handleLogout = async () => {
@@ -192,35 +235,6 @@ function DashboardContentUser() {
       console.error(error);
     }
   };
-
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const [rateValue, setRateValue] = React.useState(2);
-
-
-  const [open2, setOpen2] = React.useState(false);
-  const handleOpen = () => setOpen2(true);
-  const handleClose2 = () => setOpen2(false);
-  const [post, setpost] = useState("");
-  const handlePlaylistTittleChange = (event) => {
-    setpost(event.target.value);
-  };
-
-  const [open3, setOpen3] = React.useState(false);
-  const handleOpen3 = () => {
-    fetchPlaylist();
-    setOpen3(true);
-  };
-  const handleClose3 = () => setOpen3(false);
-  const [playlist, setPlaylist] = useState([]);
-
   const fetchPlaylist = async () => {
     try {
       const response = await axios.get("/list-user-playlist");
@@ -266,6 +280,45 @@ function DashboardContentUser() {
         }
       });
   };
+
+  const handleGenreChange = (event) => {
+    setGenre(event.target.value);
+  };
+  const handleRatingChange = (event) => {
+    setRating(event.target.value);
+  };
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+  };
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const [open2, setOpen2] = React.useState(null);
+  const handleOpen = (songID) => {
+    setOpen2(songID);
+  };
+  const handleClose2 = () => setOpen2(null);
+  const [post, setpost] = useState("");
+  const handlePlaylistTittleChange = (event) => {
+    setpost(event.target.value);
+  };
+
+  const [open3, setOpen3] = React.useState(null);
+  const handleOpen3 = (songID) => {
+    fetchPlaylist();
+    setOpen3(songID);
+  };
+  const handleClose3 = () => setOpen3(null);
+
+  const [playlist, setPlaylist] = useState([]);
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -316,16 +369,8 @@ function DashboardContentUser() {
                   spacing={2}
                   sx={{ justifyContent: "flex-end" }}
                 >
-                  <Typography
-                    component="h5"
-                    variant="h6"
-                    color="inherit"
-                    noWrap
-                    sx={{ flexGrow: 1 }}
-                    style={{ marginTop: "10px" }}
-                  >
-                    {username}
-                  </Typography>
+                  <RecentUpdates />
+
                   <IconButton
                     size="large"
                     aria-label="account of current user"
@@ -356,9 +401,13 @@ function DashboardContentUser() {
                 </Stack>
               </Container>
               <Button
-                variant="filledTonal"
+                variant="contained"
                 size="medium"
-                style={{ fontSize: "13px" }}
+                style={{
+                  marginLeft: "10px",
+                  marginRight: "10px",
+                  fontSize: "13px",
+                }}
                 onClick={handleLogout}
               >
                 Logout
@@ -383,7 +432,6 @@ function DashboardContentUser() {
           <List component="nav">
             <MainListItems />
             <Divider sx={{ my: 1 }} />
-            {/* {secondaryListItems} */}
           </List>
         </Drawer>
         <Box
@@ -502,11 +550,11 @@ function DashboardContentUser() {
           </Container>
           <Container>
             <Paper sx={{ p: 2 }}>
-              {result?.length > 0 ? (
+              {results?.length > 0 ? (
                 <>
-                  {result.map((result, index) => (
-                    <>
-                      <Stack direction="row" spacing={2} key={index}>
+                  {results.map((result, index) => (
+                    <div key={result.songID}>
+                      <Stack direction="row" spacing={2} key={result.songID}>
                         <Container
                           maxWidth="sm"
                           sx={{
@@ -554,19 +602,18 @@ function DashboardContentUser() {
                                 Rate Song
                               </Typography>
                               <Rating
-                                key={index}
+                                key={result.songID}
                                 name="simple-controlled"
                                 value={result.stars}
-                                onChange={(event, newValue) => {
-                                  setRateValue(newValue);
-                                }}
+                                onChange={(event, value) =>
+                                  handleRating(event, result.songID, value)
+                                }
                               />
                             </Box>
 
                             <Button
-                              key={index}
                               variant="contained"
-                              onClick={handleOpen}
+                              onClick={() => handleOpen(result.songID)}
                             >
                               <CommentIcon style={{ paddingRight: "5px" }} />
                               Post
@@ -574,7 +621,7 @@ function DashboardContentUser() {
                             <Modal
                               aria-labelledby="transition-modal-title"
                               aria-describedby="transition-modal-description"
-                              open={open2}
+                              open={open2 === result.songID}
                               onClose={handleClose2}
                               closeAfterTransition
                               slots={{ backdrop: Backdrop }}
@@ -584,46 +631,16 @@ function DashboardContentUser() {
                                 },
                               }}
                             >
-                              <Fade in={open2}>
-                                <Box
-                                  component="form"
-                                  noValidate
-                                  // onSubmit={handleSubmit}
-                                  sx={style}
-                                >
-                                  <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    style={{
-                                      textAlign: "center",
-                                      paddingBottom: "50px",
-                                    }}
-                                  >
-                                    <TextField
-                                      id="outlined-basic"
-                                      label="post a review"
-                                      variant="outlined"
-                                      style={{
-                                        width: "100%",
-                                        marginBottom: "10px",
-                                      }}
-                                      multiline
-                                      rows={2}
-                                      value={post}
-                                      onChange={handlePlaylistTittleChange}
-                                    />
-                                    <Button variant="contained" type="submit">
-                                      Post
-                                    </Button>
-                                  </Stack>
-                                </Box>
+                              <Fade in={open2 === result.songID}>
+                                <div>
+                                  <ReviewForm songId={result.songID} />
+                                </div>
                               </Fade>
                             </Modal>
 
                             <Button
-                              key={index}
                               variant="contained"
-                              onClick={handleOpen3}
+                              onClick={() => handleOpen3(result.songID)}
                             >
                               <AddIcon style={{ paddingRight: "5px" }} />
                               add
@@ -631,7 +648,7 @@ function DashboardContentUser() {
                             <Modal
                               aria-labelledby="transition-modal-title"
                               aria-describedby="transition-modal-description"
-                              open={open3}
+                              open={open3 === result.songID}
                               onClose={handleClose3}
                               closeAfterTransition
                               slots={{ backdrop: Backdrop }}
@@ -641,7 +658,7 @@ function DashboardContentUser() {
                                 },
                               }}
                             >
-                              <Fade in={open3}>
+                              <Fade in={open3 === result.songID}>
                                 <Box
                                   component="form"
                                   noValidate
@@ -669,7 +686,6 @@ function DashboardContentUser() {
                                             }}
                                           >
                                             <Button
-                                              key={index}
                                               onClick={() =>
                                                 addSongToPlaylist(
                                                   userPlaylist.playlistTitle,
@@ -678,7 +694,10 @@ function DashboardContentUser() {
                                               }
                                             >
                                               <p>
-                                                <strong>Playlist Title:</strong>{" "}
+                                                {result.songID}
+                                                <strong>
+                                                  Playlist Title:
+                                                </strong>{" "}
                                                 {userPlaylist.playlistTitle}
                                               </p>
                                             </Button>
@@ -694,7 +713,7 @@ function DashboardContentUser() {
                         </Container>
                       </Stack>
                       <Divider sx={{ my: 1 }} />
-                    </>
+                    </div>
                   ))}
                 </>
               ) : (
@@ -710,7 +729,7 @@ function DashboardContentUser() {
     </ThemeProvider>
   );
 }
-
+export { friendReqCount1, myObj };
 export default function Dashboard() {
   return <DashboardContentUser />;
 }
